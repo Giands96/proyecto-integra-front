@@ -5,12 +5,14 @@ import { Trash2, Edit } from "lucide-react";
 import { Cliente } from "../types";
 
 interface ClienteTableProps {
-  clientes: Cliente[];
+  clientes?: Cliente[];
   onEdit: (cliente: Cliente) => void;
   onDelete: (id: number) => void;
 }
 
 export function ClienteTable({ clientes, onEdit, onDelete }: ClienteTableProps) {
+  const rows = Array.isArray(clientes) ? clientes : [];
+
   return (
     <div className="rounded-md border bg-white">
       <table className="w-full text-sm">
@@ -24,7 +26,7 @@ export function ClienteTable({ clientes, onEdit, onDelete }: ClienteTableProps) 
           </tr>
         </thead>
         <tbody className="divide-y">
-          {clientes.map((cliente) => (
+          {rows.map((cliente) => (
             <tr key={cliente.idCliente} className="hover:bg-zinc-100/70">
               <td className="p-4">{cliente.idCliente}</td>
               <td className="p-4 font-medium">{cliente.nombresRazonSocial}</td>
@@ -42,7 +44,7 @@ export function ClienteTable({ clientes, onEdit, onDelete }: ClienteTableProps) 
               </td>
             </tr>
           ))}
-          {clientes.length === 0 && (
+          {rows.length === 0 && (
             <tr>
               <td colSpan={5} className="h-24 text-center text-muted-foreground">
                 No hay clientes registrados.

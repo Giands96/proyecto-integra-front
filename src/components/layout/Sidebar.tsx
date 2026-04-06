@@ -12,15 +12,18 @@ import {
   Package, 
   Calendar, 
   LayoutDashboard,
-  UserCheck
+  UserCheck,
+  UserCog
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/clientes", label: "Clientes", icon: Users },
+  { href: "/dashboard/empleados", label: "Empleados", icon: UserCog },
   { href: "/dashboard/camiones", label: "Camiones", icon: Truck },
   { href: "/dashboard/choferes", label: "Choferes", icon: UserCheck },
   { href: "/dashboard/terminales", label: "Terminales", icon: MapPin },
+  { href: "/dashboard/destinatarios", label: "Destinatarios", icon: MapPin },
   { href: "/dashboard/cargas", label: "Cargas", icon: Package },
   { href: "/dashboard/citas", label: "Citas", icon: Calendar },
 ];

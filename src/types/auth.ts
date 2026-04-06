@@ -12,6 +12,8 @@ export interface AuthResponse {
     username?: string;
     nombreCompleto?: string;
     email?: string;
+    nombres?: string;
+    apellidos?: string;
   };
 }
 
@@ -19,6 +21,12 @@ export interface RegisterRequest {
   username: string;
   password: string;
   role: string;
+  nombres: string;
+  apellidos: string;
+}
+
+export interface RegisterResponse {
+  message: string;
 }
 
 export interface User {

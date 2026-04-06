@@ -2,19 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Terminal } from "../types";
 import { useEffect } from "react";
-
-const terminalSchema = z.object({
-  nombreUbicacion: z.string().min(1, "Nombre de ubicación es requerido"),
-  departamento: z.string().min(1, "Departamento es requerido"),
-  provincia: z.string().min(1, "Provincia es requerida"),
-  distrito: z.string().min(1, "Distrito es requerido"),
-});
+import { terminalSchema } from "../schemas";
 
 interface TerminalFormProps {
   initialData?: Terminal | null;

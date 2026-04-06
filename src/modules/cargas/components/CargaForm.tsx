@@ -2,17 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Carga } from "../types";
 import { useEffect } from "react";
-
-const cargaSchema = z.object({
-  tipoCarga: z.string().min(1, "Tipo de carga es requerido"),
-  descripcionCarga: z.string().min(1, "Descripción es requerida"),
-});
+import { cargaSchema } from "../schemas";
 
 interface CargaFormProps {
   initialData?: Carga | null;

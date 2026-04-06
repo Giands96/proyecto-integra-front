@@ -1,3 +1,4 @@
+import { PaginatedResponse } from "@/types/pagination";
 import { Cliente } from "../clientes/types";
 import { Destinatario } from "../destinatarios/types";
 import { Terminal } from "../terminales/types";
@@ -35,3 +36,5 @@ export interface CitaCompletaRequest {
   idCamion?: number;
   observacion?: string;
 }
+
+export type DetalleCitaPaginatedResponse = PaginatedResponse<DetalleCita>;

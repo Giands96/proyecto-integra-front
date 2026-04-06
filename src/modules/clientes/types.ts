@@ -1,3 +1,5 @@
+import { PaginatedResponse } from "@/types/pagination";
+
 export interface Cliente {
   idCliente?: number;
   tipoDocumento: string;
@@ -7,3 +9,5 @@ export interface Cliente {
   provincia: string;
   distrito: string;
 }
+
+export type ClientePaginatedResponse = PaginatedResponse<Cliente>;

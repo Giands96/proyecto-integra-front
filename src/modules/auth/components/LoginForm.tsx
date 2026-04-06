@@ -56,11 +56,11 @@ export function LoginForm() {
   }
 
   return (
-    <section className="min-h-screen w-full bg-zinc-100 flex items-center justify-center p-4">
+    <section className="min-h-screen w-full bg-zinc-100 flex items-center justify-center p-6">
     
     <Card className="w-[400px]">
       <CardHeader>
-        <CardTitle className="text-center text-2xl">Ransa Logística</CardTitle>
+        <CardTitle className="text-center text-3xl font-semibold">Ransa Logística</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

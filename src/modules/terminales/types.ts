@@ -1,3 +1,5 @@
+import { PaginatedResponse } from "@/types/pagination";
+
 export interface Terminal {
   idTerminal?: number;
   nombreUbicacion: string;
@@ -5,3 +7,5 @@ export interface Terminal {
   provincia: string;
   distrito: string;
 }
+
+export type TerminalPaginatedResponse = PaginatedResponse<Terminal>;

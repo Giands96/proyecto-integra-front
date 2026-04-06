@@ -6,28 +6,30 @@ import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Cliente } from "../types";
-import { clienteSchema } from "../schemas";
+import { Destinatario } from "../types";
 import { useEffect } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { destinatarioSchema } from "../schemas";
 
-interface ClienteFormProps {
-  initialData?: Cliente | null;
-  onSubmit: (data: Cliente) => void;
+interface DestinatarioFormProps {
+  initialData?: Destinatario | null;
+  onSubmit: (data: Destinatario) => void;
   onCancel: () => void;
   loading?: boolean;
 }
 
-export function ClienteForm({ initialData, onSubmit, onCancel, loading }: ClienteFormProps) {
-  const form = useForm<z.infer<typeof clienteSchema>>({
-    resolver: zodResolver(clienteSchema),
+export function DestinatarioForm({ initialData, onSubmit, onCancel, loading }: DestinatarioFormProps) {
+  const form = useForm<z.infer<typeof destinatarioSchema>>({
+    resolver: zodResolver(destinatarioSchema),
     defaultValues: {
       tipoDocumento: "",
       numeroDocumento: "",
-      nombresRazonSocial: "",
+      nombreCompleto: "",
+      telefono: "",
       departamento: "",
       provincia: "",
       distrito: "",
+      direccionEntrega: "",
     },
   });
 
@@ -66,8 +68,7 @@ export function ClienteForm({ initialData, onSubmit, onCancel, loading }: Client
                       <SelectItem value="TAX">TAX</SelectItem>
                     </SelectContent>
                   </Select>
-                
-                  </FormControl>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -86,11 +87,22 @@ export function ClienteForm({ initialData, onSubmit, onCancel, loading }: Client
         </div>
         <FormField
           control={form.control}
-          name="nombresRazonSocial"
+          name="nombreCompleto"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre / Razon Social</FormLabel>
-              <FormControl><Input placeholder="Nombre completo o Empresa" maxLength={50} {...field} /></FormControl>
+              <FormLabel>Nombre Completo</FormLabel>
+              <FormControl><Input placeholder="Nombre completo" maxLength={50} {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="telefono"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Telefono</FormLabel>
+              <FormControl><Input placeholder="987654321" maxLength={15} {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -130,10 +142,21 @@ export function ClienteForm({ initialData, onSubmit, onCancel, loading }: Client
             )}
           />
         </div>
+        <FormField
+          control={form.control}
+          name="direccionEntrega"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Direccion de Entrega</FormLabel>
+              <FormControl><Input placeholder="Av. Javier Prado 123, Apto 456" maxLength={100} {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="flex justify-end gap-4 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
-          <Button   type="submit" disabled={loading}>
-            {initialData ? "Actualizar" : "Guardar"} Cliente
+          <Button type="submit" disabled={loading}>
+            {initialData ? "Actualizar" : "Guardar"} Destinatario
           </Button>
         </div>
       </form>

@@ -34,10 +34,7 @@ export async function getWithCache<T>(
     return inflight;
   }
 
-  const request = api
-    .get<T>(url, config)
-    .then((response) => {
-      responseCache.set(key, {
+  const request = api.get<T>(url, config).then((response) => {responseCache.set(key, {
         data: response.data,
         expiresAt: Date.now() + ttlMs,
       });
@@ -52,11 +49,11 @@ export async function getWithCache<T>(
 }
 
 export function invalidateCacheByPrefix(prefix: string) {
-  for (const key of responseCache.keys()) {
+  responseCache.forEach((_, key) => {
     if (key.startsWith(prefix)) {
       responseCache.delete(key);
     }
-  }
+  });
 }
 
 export function clearApiCache() {

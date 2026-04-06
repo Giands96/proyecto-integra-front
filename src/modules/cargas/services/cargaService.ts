@@ -1,23 +1,26 @@
 import api from "@/lib/axios";
 import { getWithCache, invalidateCacheByPrefix } from "@/lib/apiCache";
-import { Carga } from "../types";
+import { API_ROUTES } from "@/../shared/routes";
+import { Carga, CargaPaginatedResponse } from "../types";
 
 export const cargaService = {
-  listar: async () => {
-    return getWithCache<Carga[]>("/api/cargas");
+  listar: async (page: number = 0, size: number = 10) => {
+    return getWithCache<CargaPaginatedResponse>(API_ROUTES.CARGAS, {
+      params: { page, size },
+    }, 60000);
   },
   crear: async (carga: Carga) => {
-    const response = await api.post<Carga>("/api/cargas", carga);
-    invalidateCacheByPrefix("/api/cargas");
+    const response = await api.post<Carga>(API_ROUTES.CARGAS, carga);
+    invalidateCacheByPrefix(API_ROUTES.CARGAS);
     return response.data;
   },
   actualizar: async (id: number, carga: Carga) => {
-    const response = await api.put<Carga>(`/api/cargas/${id}`, carga);
-    invalidateCacheByPrefix("/api/cargas");
+    const response = await api.put<Carga>(`${API_ROUTES.CARGAS}/${id}`, carga);
+    invalidateCacheByPrefix(API_ROUTES.CARGAS);
     return response.data;
   },
   eliminar: async (id: number) => {
-    await api.delete(`/api/cargas/${id}`);
-    invalidateCacheByPrefix("/api/cargas");
+    await api.delete(`${API_ROUTES.CARGAS}/${id}`);
+    invalidateCacheByPrefix(API_ROUTES.CARGAS);
   },
 };

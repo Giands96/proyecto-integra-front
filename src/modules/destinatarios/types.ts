@@ -1,3 +1,5 @@
+import { PaginatedResponse } from "@/types/pagination";
+
 export interface Destinatario {
   idDestinatario?: number;
   tipoDocumento: string;
@@ -9,3 +11,5 @@ export interface Destinatario {
   distrito: string;
   direccionEntrega: string;
 }
+
+export type DestinatarioPaginatedResponse = PaginatedResponse<Destinatario>;

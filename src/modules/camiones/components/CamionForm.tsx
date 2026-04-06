@@ -3,15 +3,11 @@
 import { useEffect } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Camion } from "../types";
-
-const camionSchema = z.object({
-  placa: z.string().min(1, "Placa es requerida").max(15, "Máximo 15 caracteres"),
-  disponibilidad: z.number().int().min(0).max(1),
-});
+import { camionSchema } from "../schemas";
 
 type CamionFormValues = z.infer<typeof camionSchema>;
 
