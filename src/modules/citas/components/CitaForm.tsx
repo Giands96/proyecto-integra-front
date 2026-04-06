@@ -93,7 +93,12 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => onSubmit(values))}
+        onSubmit={form.handleSubmit((values) =>
+          onSubmit({
+            ...values,
+            idUsuario: values.idUsuario && values.idUsuario > 0 ? values.idUsuario : undefined,
+          })
+        )}
         className="space-y-4"
       >
         <div className="grid grid-cols-2 gap-4">
@@ -109,7 +114,13 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccione una opción" />
+                      <SelectValue placeholder="Seleccione una opción">
+                        {field.value
+                          ? data.clientes.find(
+                              (c) => c.idCliente === field.value,
+                            )?.nombresRazonSocial
+                          : null}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -136,7 +147,13 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccione una opción" />
+                      <SelectValue placeholder="Seleccione una opción">
+                        {field.value
+                          ? data.destinatarios.find(
+                              (d) => d.idDestinatario === field.value,
+                            )?.nombreCompleto
+                          : null}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -168,7 +185,13 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccione una opción" />
+                      <SelectValue placeholder="Seleccione una opción">
+                        {field.value
+                          ? data.terminales.find(
+                              (t) => t.idTerminal === field.value,
+                            )?.nombreUbicacion
+                          : null}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -198,7 +221,13 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccione una opción" />
+                      <SelectValue placeholder="Seleccione una opción">
+                        {field.value
+                          ? data.terminales.find(
+                              (t) => t.idTerminal === field.value,
+                            )?.nombreUbicacion
+                          : null}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -229,7 +258,18 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccione una opción" />
+                    <SelectValue placeholder="Seleccione una opción">
+                      {field.value
+                        ? (() => {
+                            const ca = data.cargas.find(
+                              (ca) => ca.idCarga === field.value,
+                            );
+                            return ca
+                              ? `${ca.tipoCarga} (${ca.codigoSeguimiento})`
+                              : null;
+                          })()
+                        : null}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -247,7 +287,7 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="idChofer"
+            name="idUsuario"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Chofer (Asignar)</FormLabel>
@@ -257,12 +297,21 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccione una opción" />
+                      <SelectValue placeholder="Seleccione una opción">
+                        {field.value
+                          ? data.choferes.find((ch) => ch.idUsuario === field.value)?.nombresCompletos ??
+                            data.choferes.find((ch) => ch.idUsuario === field.value)?.username ??
+                            null
+                          : null}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {data.choferes.map((ch) => (
-                      <SelectItem key={ch.idChofer} value={String(ch.idChofer)}>
+                      <SelectItem
+                        key={ch.idUsuario}
+                        value={String(ch.idUsuario)}
+                      >
                         {ch.nombresCompletos}
                       </SelectItem>
                     ))}
@@ -284,7 +333,13 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccione una opción" />
+                      <SelectValue placeholder="Seleccione una opción">
+                        {field.value
+                          ? data.camiones.find(
+                              (cm) => cm.idCamion === field.value,
+                            )?.placa
+                          : null}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
