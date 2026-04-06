@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Truck, ShieldCheck, Search, ArrowRight } from "lucide-react";
+import React from "react";
+
 
 export default function HomePage() {
   return (
