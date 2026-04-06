@@ -22,6 +22,7 @@ export default function CitasPage() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
+  const [estadoActualizandoId, setEstadoActualizandoId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCitas();
@@ -52,6 +53,18 @@ export default function CitasPage() {
     }
   }
 
+  async function handleEstadoChange(idDetalle: number, estado: string) {
+    setEstadoActualizandoId(idDetalle);
+    try {
+      await citaService.actualizarEstado(idDetalle, estado);
+      await fetchCitas();
+    } catch (error) {
+      console.error("Error updating cita estado:", error);
+    } finally {
+      setEstadoActualizandoId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -75,7 +88,11 @@ export default function CitasPage() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <CitaTable detalles={detalles} />
+        <CitaTable
+          detalles={detalles}
+          onEstadoChange={handleEstadoChange}
+          updatingEstadoId={estadoActualizandoId}
+        />
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

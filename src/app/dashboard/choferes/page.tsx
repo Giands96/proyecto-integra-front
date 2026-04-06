@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@/components/ui/button";
-import { Plus, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChoferTable } from "@/modules/choferes/components/ChoferTable";
 import { choferService } from "@/modules/choferes/services/choferService";
-import { Chofer } from "@/modules/choferes/types";
+import { Chofer, ChoferUpdatePayload } from "@/modules/choferes/types";
 
 const ChoferFormLazy = dynamic(
   () => import("@/modules/choferes/components/ChoferForm").then((mod) => mod.ChoferForm),
@@ -32,7 +31,7 @@ export default function ChoferesPage() {
     setLoading(true);
     try {
       const data = await choferService.listar();
-      setChoferes(data.content);
+      setChoferes(Array.isArray(data.content) ? data.content : []);
     } catch (error) {
       console.error("Error fetching choferes:", error);
     } finally {
@@ -40,15 +39,16 @@ export default function ChoferesPage() {
     }
   }
 
-  async function handleSubmit(data: Chofer) {
+  async function handleSubmit(data: ChoferUpdatePayload) {
+    if (!editingChofer?.idUsuario) {
+      return;
+    }
+
     setFormLoading(true);
     try {
-      if (editingChofer) {
-        await choferService.actualizar(editingChofer.idChofer!, data);
-      } else {
-        await choferService.crear(data);
-      }
+      await choferService.actualizar(editingChofer.idUsuario, data);
       setIsDialogOpen(false);
+      setEditingChofer(null);
       fetchChoferes();
     } catch (error) {
       console.error("Error saving chofer:", error);
@@ -57,28 +57,13 @@ export default function ChoferesPage() {
     }
   }
 
-  async function handleDelete(id: number) {
-    if (confirm("¿Estás seguro de eliminar este chofer?")) {
-      try {
-        await choferService.eliminar(id);
-        fetchChoferes();
-      } catch (error) {
-        console.error("Error deleting chofer:", error);
-      }
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Gestión de Choferes</h1>
-          <p className="text-muted-foreground">Administra el personal de conducción y sus licencias.</p>
+          <p className="text-muted-foreground">Visualiza usuarios con rol CHOFER y edita sus datos.</p>
         </div>
-        <Button onClick={() => { setEditingChofer(null); setIsDialogOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Chofer
-        </Button>
       </div>
 
       {loading ? (
@@ -89,20 +74,22 @@ export default function ChoferesPage() {
         <ChoferTable 
           choferes={choferes} 
           onEdit={(c) => { setEditingChofer(c); setIsDialogOpen(true); }}
-          onDelete={handleDelete}
         />
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>{editingChofer ? "Editar Chofer" : "Nuevo Chofer"}</DialogTitle>
+            <DialogTitle>Editar Chofer</DialogTitle>
           </DialogHeader>
-          {isDialogOpen ? (
+          {isDialogOpen && editingChofer ? (
             <ChoferFormLazy
               initialData={editingChofer}
               onSubmit={handleSubmit}
-              onCancel={() => setIsDialogOpen(false)}
+              onCancel={() => {
+                setIsDialogOpen(false);
+                setEditingChofer(null);
+              }}
               loading={formLoading}
             />
           ) : null}
