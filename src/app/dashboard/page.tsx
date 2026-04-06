@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -27,9 +27,6 @@ import { clienteService } from "@/modules/clientes/services/clienteService";
 import { terminalService } from "@/modules/terminales/services/terminalService";
 import { cargaService } from "@/modules/cargas/services/cargaService";
 import { citaService } from "@/modules/citas/services/citaService";
-import { Camion } from "@/modules/camiones/types";
-import { Chofer } from "@/modules/choferes/types";
-import { DetalleCita } from "@/modules/citas/types";
 
 type DashboardData = {
   clientes: number;
@@ -108,10 +105,10 @@ export default function DashboardPage() {
           citaService.listarDetalles(),
         ]);
 
-        const splitCamiones = getDisponibilidadSplit(camiones as Camion[]);
-        const splitChoferes = getDisponibilidadSplit(choferes as Chofer[]);
+        const splitCamiones = getDisponibilidadSplit(camiones.content);
+        const splitChoferes = getDisponibilidadSplit(choferes.content);
 
-        const citasByEstado = (citas as DetalleCita[]).reduce<Record<string, number>>((acc, item) => {
+        const citasByEstado = citas.content.reduce<Record<string, number>>((acc, item) => {
           const estado = normalizeEstado(item.estado);
           acc[estado] = (acc[estado] || 0) + 1;
           return acc;
@@ -123,12 +120,12 @@ export default function DashboardPage() {
         }));
 
         setData({
-          clientes: clientes.length,
-          camiones: camiones.length,
-          choferes: choferes.length,
-          terminales: terminales.length,
-          cargas: cargas.length,
-          citas: citas.length,
+          clientes: clientes.content.length,
+          camiones: camiones.content.length,
+          choferes: choferes.content.length,
+          terminales: terminales.content.length,
+          cargas: cargas.content.length,
+          citas: citas.content.length,
           camionesDisponibles: splitCamiones.disponibles,
           camionesNoDisponibles: splitCamiones.noDisponibles,
           choferesDisponibles: splitChoferes.disponibles,

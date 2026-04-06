@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClienteTable } from "@/modules/clientes/components/ClienteTable";
-import { ClienteForm } from "@/modules/clientes/components/ClienteForm";
 import { clienteService } from "@/modules/clientes/services/clienteService";
 import { Cliente } from "@/modules/clientes/types";
+
+const ClienteFormLazy = dynamic(
+  () => import("@/modules/clientes/components/ClienteForm").then((mod) => mod.ClienteForm),
+  {
+    ssr: false,
+    loading: () => <p className="text-sm text-muted-foreground">Cargando formulario...</p>,
+  }
+);
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -24,9 +32,10 @@ export default function ClientesPage() {
     setLoading(true);
     try {
       const data = await clienteService.listar();
-      setClientes(data);
+      setClientes(Array.isArray(data.content) ? data.content : []);
     } catch (error) {
       console.error("Error fetching clientes:", error);
+      setClientes([]);
     } finally {
       setLoading(false);
     }
@@ -90,12 +99,14 @@ export default function ClientesPage() {
           <DialogHeader>
             <DialogTitle>{editingCliente ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
           </DialogHeader>
-          <ClienteForm 
-            initialData={editingCliente} 
-            onSubmit={handleSubmit} 
-            onCancel={() => setIsDialogOpen(false)}
-            loading={formLoading}
-          />
+          {isDialogOpen ? (
+            <ClienteFormLazy
+              initialData={editingCliente}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+              loading={formLoading}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

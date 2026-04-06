@@ -1,13 +1,21 @@
 "use client";
-
+import React from "react";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CargaTable } from "@/modules/cargas/components/CargaTable";
-import { CargaForm } from "@/modules/cargas/components/CargaForm";
 import { cargaService } from "@/modules/cargas/services/cargaService";
 import { Carga } from "@/modules/cargas/types";
+
+const CargaFormLazy = dynamic(
+  () => import("@/modules/cargas/components/CargaForm").then((mod) => mod.CargaForm),
+  {
+    ssr: false,
+    loading: () => <p className="text-sm text-muted-foreground">Cargando formulario...</p>,
+  }
+);
 
 export default function CargasPage() {
   const [cargas, setCargas] = useState<Carga[]>([]);
@@ -24,7 +32,7 @@ export default function CargasPage() {
     setLoading(true);
     try {
       const data = await cargaService.listar();
-      setCargas(data);
+      setCargas(data.content);
     } catch (error) {
       console.error("Error fetching cargas:", error);
     } finally {
@@ -90,12 +98,14 @@ export default function CargasPage() {
           <DialogHeader>
             <DialogTitle>{editingCarga ? "Editar Carga" : "Nueva Carga"}</DialogTitle>
           </DialogHeader>
-          <CargaForm 
-            initialData={editingCarga} 
-            onSubmit={handleSubmit} 
-            onCancel={() => setIsDialogOpen(false)}
-            loading={formLoading}
-          />
+          {isDialogOpen ? (
+            <CargaFormLazy
+              initialData={editingCarga}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+              loading={formLoading}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

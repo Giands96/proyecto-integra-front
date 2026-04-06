@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TerminalTable } from "@/modules/terminales/components/TerminalTable";
-import { TerminalForm } from "@/modules/terminales/components/TerminalForm";
 import { terminalService } from "@/modules/terminales/services/terminalService";
 import { Terminal } from "@/modules/terminales/types";
+
+const TerminalFormLazy = dynamic(
+  () => import("@/modules/terminales/components/TerminalForm").then((mod) => mod.TerminalForm),
+  {
+    ssr: false,
+    loading: () => <p className="text-sm text-muted-foreground">Cargando formulario...</p>,
+  }
+);
 
 export default function TerminalesPage() {
   const [terminales, setTerminales] = useState<Terminal[]>([]);
@@ -24,7 +32,7 @@ export default function TerminalesPage() {
     setLoading(true);
     try {
       const data = await terminalService.listar();
-      setTerminales(data);
+      setTerminales(data.content);
     } catch (error) {
       console.error("Error fetching terminales:", error);
     } finally {
@@ -90,12 +98,14 @@ export default function TerminalesPage() {
           <DialogHeader>
             <DialogTitle>{editingTerminal ? "Editar Terminal" : "Nuevo Terminal"}</DialogTitle>
           </DialogHeader>
-          <TerminalForm 
-            initialData={editingTerminal} 
-            onSubmit={handleSubmit} 
-            onCancel={() => setIsDialogOpen(false)}
-            loading={formLoading}
-          />
+          {isDialogOpen ? (
+            <TerminalFormLazy
+              initialData={editingTerminal}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+              loading={formLoading}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

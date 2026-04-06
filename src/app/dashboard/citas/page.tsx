@@ -1,13 +1,21 @@
 "use client";
-
+import React from "react";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2, RefreshCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CitaTable } from "@/modules/citas/components/CitaTable";
-import { CitaForm } from "@/modules/citas/components/CitaForm";
 import { citaService } from "@/modules/citas/services/citaService";
 import { DetalleCita } from "@/modules/citas/types";
+
+const CitaFormLazy = dynamic(
+  () => import("@/modules/citas/components/CitaForm").then((mod) => mod.CitaForm),
+  {
+    ssr: false,
+    loading: () => <p className="text-sm text-muted-foreground">Cargando formulario...</p>,
+  }
+);
 
 export default function CitasPage() {
   const [detalles, setDetalles] = useState<DetalleCita[]>([]);
@@ -23,7 +31,7 @@ export default function CitasPage() {
     setLoading(true);
     try {
       const data = await citaService.listarDetalles();
-      setDetalles(data);
+      setDetalles(data.content);
     } catch (error) {
       console.error("Error fetching citas:", error);
     } finally {
@@ -75,11 +83,13 @@ export default function CitasPage() {
           <DialogHeader>
             <DialogTitle>Nueva Cita Logística</DialogTitle>
           </DialogHeader>
-          <CitaForm 
-            onSubmit={handleSubmit} 
-            onCancel={() => setIsDialogOpen(false)}
-            loading={formLoading}
-          />
+          {isDialogOpen ? (
+            <CitaFormLazy
+              onSubmit={handleSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+              loading={formLoading}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

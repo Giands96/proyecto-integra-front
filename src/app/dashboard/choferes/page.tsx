@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChoferTable } from "@/modules/choferes/components/ChoferTable";
-import { ChoferForm } from "@/modules/choferes/components/ChoferForm";
 import { choferService } from "@/modules/choferes/services/choferService";
 import { Chofer } from "@/modules/choferes/types";
+
+const ChoferFormLazy = dynamic(
+  () => import("@/modules/choferes/components/ChoferForm").then((mod) => mod.ChoferForm),
+  {
+    ssr: false,
+    loading: () => <p className="text-sm text-muted-foreground">Cargando formulario...</p>,
+  }
+);
 
 export default function ChoferesPage() {
   const [choferes, setChoferes] = useState<Chofer[]>([]);
@@ -24,7 +32,7 @@ export default function ChoferesPage() {
     setLoading(true);
     try {
       const data = await choferService.listar();
-      setChoferes(data);
+      setChoferes(data.content);
     } catch (error) {
       console.error("Error fetching choferes:", error);
     } finally {
@@ -90,12 +98,14 @@ export default function ChoferesPage() {
           <DialogHeader>
             <DialogTitle>{editingChofer ? "Editar Chofer" : "Nuevo Chofer"}</DialogTitle>
           </DialogHeader>
-          <ChoferForm 
-            initialData={editingChofer} 
-            onSubmit={handleSubmit} 
-            onCancel={() => setIsDialogOpen(false)}
-            loading={formLoading}
-          />
+          {isDialogOpen ? (
+            <ChoferFormLazy
+              initialData={editingChofer}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+              loading={formLoading}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

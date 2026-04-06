@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CamionTable } from "@/modules/camiones/components/CamionTable";
-import { CamionForm } from "@/modules/camiones/components/CamionForm";
 import { camionService } from "@/modules/camiones/services/camionService";
 import { Camion } from "@/modules/camiones/types";
+
+const CamionFormLazy = dynamic(
+  () => import("@/modules/camiones/components/CamionForm").then((mod) => mod.CamionForm),
+  {
+    ssr: false,
+    loading: () => <p className="text-sm text-muted-foreground">Cargando formulario...</p>,
+  }
+);
 
 export default function CamionesPage() {
   const [camiones, setCamiones] = useState<Camion[]>([]);
@@ -24,7 +32,7 @@ export default function CamionesPage() {
     setLoading(true);
     try {
       const data = await camionService.listar();
-      setCamiones(data);
+      setCamiones(data.content);
     } catch (error) {
       console.error("Error fetching camiones:", error);
     } finally {
@@ -90,12 +98,14 @@ export default function CamionesPage() {
           <DialogHeader>
             <DialogTitle>{editingCamion ? "Editar Camión" : "Nuevo Camión"}</DialogTitle>
           </DialogHeader>
-          <CamionForm 
-            initialData={editingCamion} 
-            onSubmit={handleSubmit} 
-            onCancel={() => setIsDialogOpen(false)}
-            loading={formLoading}
-          />
+          {isDialogOpen ? (
+            <CamionFormLazy
+              initialData={editingCamion}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+              loading={formLoading}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>
