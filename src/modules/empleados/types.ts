@@ -11,7 +11,7 @@ export interface Empleado {
 export interface CrearEmpleadoPayload {
   username: string;
   password: string;
-  role: "ADMINISTRADOR" | "OPERADOR" | "CHOFER";
+  rol: "ADMINISTRADOR" | "OPERADOR" | "CHOFER";
   nombres: string;
   apellidos: string;
 }
