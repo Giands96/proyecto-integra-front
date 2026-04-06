@@ -8,5 +8,6 @@ export const citaSchema = z.object({
   idCarga: z.coerce.number().min(1, "Carga es requerida"),
   idChofer: z.coerce.number().optional(),
   idCamion: z.coerce.number().optional(),
+  diasEstimados: z.coerce.number().min(1, "Dias estimados es requerido").max(7, "Dias estimados no puede ser mayor a 7"),
   observacion: z.string().optional(),
 });

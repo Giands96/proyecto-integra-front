@@ -23,6 +23,7 @@ export interface DetalleCita {
   camion?: Camion;
   fechaRegistro: string;
   estado: string;
+  diasEstimados: number;
   observacion?: string;
 }
 
