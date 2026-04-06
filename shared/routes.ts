@@ -15,6 +15,7 @@ export const API_ROUTES = {
     BASE: '/api/citas',
     DETALLES: '/api/citas/detalles',
     GUARDAR: '/api/citas/guardar',
+    ACTUALIZAR_ESTADO: (idDetalle: number) => `/api/citas/${idDetalle}/estado`,
   }
 };
 
