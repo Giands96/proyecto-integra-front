@@ -6,6 +6,13 @@ import { Carga } from "../cargas/types";
 import { Camion } from "../camiones/types";
 import { Empleado } from "../empleados/types";
 
+export type EstadoCita =
+  | "POR_ASIGNAR"
+  | "PROGRAMADO"
+  | "EN_CAMINO"
+  | "ENTREGADO"
+  | "CANCELADO";
+
 export interface Cita {
   idCita?: number;
   fechaCreacion: string;
@@ -13,7 +20,8 @@ export interface Cita {
 
 export interface DetalleCita {
   idDetalle: number;
-  usuario: Empleado;
+  usuario?: Empleado;
+  idUsuario?: number;
   cita: Cita;
   cliente: Cliente;
   destinatario: Destinatario;
@@ -33,6 +41,7 @@ export interface CitaCompletaRequest {
   idTerminalOrigen: number;
   idTerminalDestino?: number;
   idCarga: number;
+  idUsuario?: number;
   idCamion?: number;
   diasEstimados: number;
   observacion?: string;
