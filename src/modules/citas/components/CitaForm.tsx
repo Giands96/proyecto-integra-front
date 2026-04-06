@@ -92,104 +92,261 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit((values) => onSubmit(values))}
+        className="space-y-4"
+      >
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="idCliente" render={({ field }) => (
+          <FormField
+            control={form.control}
+            name="idCliente"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cliente</FormLabel>
+                <Select
+                  value={field.value ? String(field.value) : ""}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una opción" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {data.clientes.map((c) => (
+                      <SelectItem key={c.idCliente} value={String(c.idCliente)}>
+                        {c.nombresRazonSocial}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="idDestinatario"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Destinatario</FormLabel>
+                <Select
+                  value={field.value ? String(field.value) : ""}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una opción" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {data.destinatarios.map((d) => (
+                      <SelectItem
+                        key={d.idDestinatario}
+                        value={String(d.idDestinatario)}
+                      >
+                        {d.nombreCompleto}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="idTerminalOrigen"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Origen</FormLabel>
+                <Select
+                  value={field.value ? String(field.value) : ""}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una opción" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {data.terminales.map((t) => (
+                      <SelectItem
+                        key={t.idTerminal}
+                        value={String(t.idTerminal)}
+                      >
+                        {t.nombreUbicacion}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="idTerminalDestino"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Destino (Opcional)</FormLabel>
+                <Select
+                  value={field.value ? String(field.value) : ""}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una opción" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {data.terminales.map((t) => (
+                      <SelectItem
+                        key={t.idTerminal}
+                        value={String(t.idTerminal)}
+                      >
+                        {t.nombreUbicacion}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <FormField
+          control={form.control}
+          name="idCarga"
+          render={({ field }) => (
             <FormItem>
-              <FormLabel>Cliente</FormLabel>
-              <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Seleccione una opción" /></SelectTrigger></FormControl>
+              <FormLabel>Carga</FormLabel>
+              <Select
+                value={field.value ? String(field.value) : ""}
+                onValueChange={(value) => field.onChange(Number(value))}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione una opción" />
+                  </SelectTrigger>
+                </FormControl>
                 <SelectContent>
-                  {data.clientes.map((c) => (
-                    <SelectItem key={c.idCliente} value={String(c.idCliente)}>
-                      {c.nombresRazonSocial}
+                  {data.cargas.map((ca) => (
+                    <SelectItem key={ca.idCarga} value={String(ca.idCarga)}>
+                      {ca.tipoCarga} ({ca.codigoSeguimiento})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage/>
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="idDestinatario" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Destinatario</FormLabel>
-              <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Seleccione una opción" /></SelectTrigger></FormControl>
-                <SelectContent>
-                  {data.destinatarios.map((d) => (
-                    <SelectItem key={d.idDestinatario} value={String(d.idDestinatario)}>
-                      {d.nombreCompleto}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <FormMessage />
             </FormItem>
-          )} />
-        </div>
+          )}
+        />
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="idTerminalOrigen" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Origen</FormLabel>
-              <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Seleccione una opción" /></SelectTrigger></FormControl>
-                <SelectContent>{data.terminales.map((t) => <SelectItem key={t.idTerminal} value={t.idTerminal!.toString()}>{t.nombreUbicacion}</SelectItem>)}</SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="idTerminalDestino" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Destino (Opcional)</FormLabel>
-              <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Seleccione una opción" /></SelectTrigger></FormControl>
-                <SelectContent>{data.terminales.map((t) => <SelectItem key={t.idTerminal} value={t.idTerminal!.toString()}>{t.nombreUbicacion}</SelectItem>)}</SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} />
+          <FormField
+            control={form.control}
+            name="idChofer"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Chofer (Asignar)</FormLabel>
+                <Select
+                  value={field.value ? String(field.value) : ""}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una opción" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {data.choferes.map((ch) => (
+                      <SelectItem key={ch.idChofer} value={String(ch.idChofer)}>
+                        {ch.nombresCompletos}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="idCamion"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Camión (Asignar)</FormLabel>
+                <Select
+                  value={field.value ? String(field.value) : ""}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una opción" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {data.camiones.map((cm) => (
+                      <SelectItem key={cm.idCamion} value={String(cm.idCamion)}>
+                        {cm.placa}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="diasEstimados"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tiempo Estimado</FormLabel>
+                <Select
+                  value={field.value ? String(field.value) : ""}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona los días estimados" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6, 7].map((dia) => (
+                      <SelectItem key={dia} value={String(dia)}>
+                        {dia} {dia === 1 ? "día" : "días"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-        <FormField control={form.control} name="idCarga" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Carga</FormLabel>
-            <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
-              <FormControl><SelectTrigger><SelectValue placeholder="Seleccione una opción" /></SelectTrigger></FormControl>
-              <SelectContent>{data.cargas.map((ca) => <SelectItem key={ca.idCarga} value={ca.idCarga!.toString()}>{ca.tipoCarga} ({ca.codigoSeguimiento})</SelectItem>)}</SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="idChofer" render={({ field }) => (
+        <FormField
+          control={form.control}
+          name="observacion"
+          render={({ field }) => (
             <FormItem>
-              <FormLabel>Chofer (Asignar)</FormLabel>
-              <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Seleccione una opción" /></SelectTrigger></FormControl>
-                <SelectContent>{data.choferes.map((ch) => <SelectItem key={ch.idChofer} value={ch.idChofer!.toString()}>{ch.nombresCompletos}</SelectItem>)}</SelectContent>
-              </Select>
-              <FormMessage />
+              <FormLabel>Observación</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
             </FormItem>
-          )} />
-          <FormField control={form.control} name="idCamion" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Camión (Asignar)</FormLabel>
-              <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Seleccione una opción" /></SelectTrigger></FormControl>
-                <SelectContent>{data.camiones.map((cm) => <SelectItem key={cm.idCamion} value={cm.idCamion!.toString()}>{cm.placa}</SelectItem>)}</SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} />
-        </div>
-        <FormField control={form.control} name="observacion" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Observación</FormLabel>
-            <FormControl><Input {...field} /></FormControl>
-          </FormItem>
-        )} />
+          )}
+        />
         <div className="flex justify-end gap-4 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
-          <Button type="submit" disabled={loading}>Programar Cita</Button>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={loading}>
+            Programar Cita
+          </Button>
         </div>
       </form>
     </Form>

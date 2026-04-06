@@ -99,10 +99,13 @@ export function ChoferForm({ initialData, onSubmit, onCancel, loading }: ChoferF
               <FormLabel>Empleado</FormLabel>
               <FormControl>
                 <Select
+                // Para mostrar el valor seleccionado correctamente, 
+                // convertimos el value a string, ya que el Select maneja valores como strings
                   value={field.value ? String(field.value) : ""}
                   onValueChange={(value) => field.onChange(Number(value))}
                   onOpenChange={(open) => {
                     if (!open) {
+                      // onBlur del Select para validar el campo al cerrar el dropdown
                       field.onBlur();
                     }
                   }}
