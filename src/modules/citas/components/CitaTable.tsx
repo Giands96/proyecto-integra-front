@@ -1,7 +1,6 @@
 "use client";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { DetalleCita } from "../types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -14,6 +13,8 @@ const ESTADO_LABELS: Record<(typeof ESTADOS)[number], string> = {
   ENTREGADO: "Entregado",
   CANCELADO: "Cancelado",
 };
+
+
 
 function normalizeEstado(estado: string) {
   return estado?.trim().toUpperCase() || "POR_ASIGNAR";
@@ -37,21 +38,11 @@ function getNombreUsuario(usuario: unknown) {
   return nombreCompleto || username;
 }
 
-function getEstadoBadgeClass(estado: string) {
-  switch (normalizeEstado(estado)) {
-    case "POR_ASIGNAR":
-      return "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-100";
-    case "PROGRAMADO":
-      return "border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100";
-    case "EN_CAMINO":
-      return "border-amber-200 bg-amber-100 text-amber-800 hover:bg-amber-100";
-    case "ENTREGADO":
-      return "border-emerald-200 bg-emerald-100 text-emerald-700 hover:bg-emerald-100";
-    case "CANCELADO":
-      return "border-rose-200 bg-rose-100 text-rose-700 hover:bg-rose-100";
-    default:
-      return "border-zinc-200 bg-zinc-100 text-zinc-700 hover:bg-zinc-100";
-  }
+
+
+function getEstadoLabel(estado: string) {
+  const key = normalizeEstado(estado) as (typeof ESTADOS)[number];
+  return ESTADO_LABELS[key] || toText(estado) || "Desconocido";
 }
 
 function getChoferLabel(detalle: DetalleCita) {
@@ -81,6 +72,8 @@ function getChoferLabel(detalle: DetalleCita) {
   return detalle.idUsuario ? `Usuario #${detalle.idUsuario}` : "No asignado";
 }
 
+
+
 interface CitaTableProps {
   detalles: DetalleCita[];
   onEstadoChange: (idDetalle: number, estado: string) => void;
@@ -106,27 +99,52 @@ export function CitaTable({ detalles, onEstadoChange, updatingEstadoId }: CitaTa
           {detalles.map((d) => (
             <TableRow key={d.idDetalle}>
               <TableCell>{d.idDetalle}</TableCell>
-              <TableCell className="font-medium">{d.cliente.nombresRazonSocial}</TableCell>
+              <TableCell className="font-medium">
+                {d.cliente.nombresRazonSocial}
+              </TableCell>
               <TableCell>
-                {d.terminalOrigen.nombreUbicacion} - {d.terminalDestino?.nombreUbicacion || "-"}
+                {d.terminalOrigen.nombreUbicacion} -{" "}
+                {d.terminalDestino?.nombreUbicacion || "-"}
               </TableCell>
               <TableCell>
                 <div>{d.carga.tipoCarga}</div>
-                <div className="text-xs text-muted-foreground">{d.carga.codigoSeguimiento}</div>
+                <div className="text-xs text-muted-foreground">
+                  {d.carga.codigoSeguimiento}
+                </div>
               </TableCell>
               <TableCell>
                 <div>{getChoferLabel(d)}</div>
-                <div className="text-xs text-muted-foreground">{d.camion?.placa || "-"}</div>
+                <div className="text-xs text-muted-foreground">
+                  {d.camion?.placa || "-"}
+                </div>
               </TableCell>
               <TableCell>
-                <Badge variant="outline" className={getEstadoBadgeClass(d.estado)}>
-                  {ESTADO_LABELS[normalizeEstado(d.estado) as (typeof ESTADOS)[number]] ?? d.estado}
-                </Badge>
+                {(() => {
+                  // Diccionario de colores (¡Adiós a los problemas del Badge!)
+                  const coloresPorEstado: Record<string, string> = {
+                    POR_ASIGNAR: "border-slate-300 bg-slate-200 text-slate-800",
+                    PROGRAMADO: "border-blue-300 bg-blue-200 text-blue-800",
+                    EN_CAMINO: "border-amber-300 bg-amber-200 text-amber-900",
+                    ENTREGADO: "border-emerald-300 bg-emerald-200 text-emerald-800",
+                    CANCELADO: "border-rose-300 bg-rose-200 text-rose-800",
+                  };
+
+                  const estadoActual = normalizeEstado(d.estado);
+                  const clasesColor = coloresPorEstado[estadoActual] || "border-zinc-300 bg-zinc-200 text-zinc-800";
+
+                  return (
+                    <div className={`inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors ${clasesColor}`}>
+                      {getEstadoLabel(d.estado)}
+                    </div>
+                  );
+                })()}
               </TableCell>
               <TableCell>
                 <Select
                   value={normalizeEstado(d.estado)}
-                  onValueChange={(value) => onEstadoChange(d.idDetalle, value ?? "POR_ASIGNAR")}
+                  onValueChange={(value) =>
+                    onEstadoChange(d.idDetalle, value ?? "POR_ASIGNAR")
+                  }
                   disabled={updatingEstadoId === d.idDetalle}
                 >
                   <SelectTrigger className="w-[170px]">
