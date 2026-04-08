@@ -19,24 +19,34 @@ const CitaFormLazy = dynamic(
 
 export default function CitasPage() {
   const [detalles, setDetalles] = useState<DetalleCita[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [estadoActualizandoId, setEstadoActualizandoId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchCitas();
+    fetchCitas(true);
   }, []);
 
-  async function fetchCitas() {
-    setLoading(true);
+  async function fetchCitas(isInitial = false) {
+    if (isInitial) {
+      setInitialLoading(true);
+    } else {
+      setRefreshing(true);
+    }
+
     try {
       const data = await citaService.listarDetalles();
       setDetalles(data.content);
     } catch (error) {
       console.error("Error fetching citas:", error);
     } finally {
-      setLoading(false);
+      if (isInitial) {
+        setInitialLoading(false);
+      } else {
+        setRefreshing(false);
+      }
     }
   }
 
@@ -45,7 +55,7 @@ export default function CitasPage() {
     try {
       await citaService.guardarCompleta(data);
       setIsDialogOpen(false);
-      fetchCitas();
+      await fetchCitas();
     } catch (error) {
       console.error("Error saving cita:", error);
     } finally {
@@ -54,12 +64,18 @@ export default function CitasPage() {
   }
 
   async function handleEstadoChange(idDetalle: number, estado: string) {
+    // Actualización optimista: el badge cambia inmediatamente
+    setDetalles((prev) =>
+      prev.map((d) => (d.idDetalle === idDetalle ? { ...d, estado } : d))
+    );
+
     setEstadoActualizandoId(idDetalle);
     try {
       await citaService.actualizarEstado(idDetalle, estado);
-      await fetchCitas();
+      await fetchCitas(); // sincroniza con el backend sin ocultar la tabla
     } catch (error) {
       console.error("Error updating cita estado:", error);
+      await fetchCitas(); // revierte al estado real si falló
     } finally {
       setEstadoActualizandoId(null);
     }
@@ -70,11 +86,18 @@ export default function CitasPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Gestión de Citas Logísticas</h1>
-          <p className="text-muted-foreground">Programa envíos, asigna personal y monitorea el estado de la carga.</p>
+          <p className="text-muted-foreground">
+            Programa envíos, asigna personal y monitorea el estado de la carga.
+          </p>
         </div>
         <div className="flex gap-4">
-          <Button variant="outline" size="icon" onClick={fetchCitas} disabled={loading}>
-            <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => fetchCitas()}
+            disabled={refreshing || initialLoading}
+          >
+            <RefreshCcw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
           </Button>
           <Button onClick={() => setIsDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -83,7 +106,7 @@ export default function CitasPage() {
         </div>
       </div>
 
-      {loading ? (
+      {initialLoading ? (
         <div className="flex h-64 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
