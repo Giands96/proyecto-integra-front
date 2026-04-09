@@ -23,6 +23,7 @@ export default function CargasPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCarga, setEditingCarga] = useState<Carga | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [updatingEstadoId, setUpdatingEstadoId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCargas();
@@ -68,6 +69,24 @@ export default function CargasPage() {
     }
   }
 
+  async function handleEstadoChange(idCarga: number, estado: string) {
+    // Actualización optimista para feedback inmediato en tabla
+    setCargas((prev) =>
+      prev.map((c) => (c.idCarga === idCarga ? { ...c, estado } : c))
+    );
+
+    setUpdatingEstadoId(idCarga);
+    try {
+      await cargaService.actualizarEstado(idCarga, estado);
+      await fetchCargas(); // sincroniza estado con backend
+    } catch (error) {
+      console.error("Error updating carga estado:", error);
+      await fetchCargas(); // revierte si falla
+    } finally {
+      setUpdatingEstadoId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -90,6 +109,8 @@ export default function CargasPage() {
           cargas={cargas} 
           onEdit={(c) => { setEditingCarga(c); setIsDialogOpen(true); }}
           onDelete={handleDelete}
+          onEstadoChange={handleEstadoChange}
+          updatingEstadoId={updatingEstadoId}
         />
       )}
 
