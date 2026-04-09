@@ -23,4 +23,13 @@ export const cargaService = {
     await api.delete(`${API_ROUTES.CARGAS}/${id}`);
     invalidateCacheByPrefix(API_ROUTES.CARGAS);
   },
+  actualizarEstado: async (idCarga: number, nuevoEstado: string) => {
+    // enviamos null en el body porque el endpoint solo necesita el nuevo estado como parámetro
+    // el backend actualizará el estado de la carga y devolverá la carga actualizada
+    const response = await api.put(`${API_ROUTES.CARGAS}/${idCarga}/estado`, null, {
+      params: { nuevoEstado } 
+    });
+    invalidateCacheByPrefix(API_ROUTES.CARGAS);
+    return response.data;
+  }
 };
