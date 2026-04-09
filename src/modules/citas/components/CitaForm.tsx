@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+
 import { clienteService } from "@/modules/clientes/services/clienteService";
 import { destinatarioService } from "@/modules/destinatarios/services/destinatarioService";
 import { terminalService } from "@/modules/terminales/services/terminalService";
 import { cargaService } from "@/modules/cargas/services/cargaService";
 import { choferService } from "@/modules/choferes/services/choferService";
 import { camionService } from "@/modules/camiones/services/camionService";
+
 import { CitaCompletaRequest } from "../types";
 import { Cliente } from "@/modules/clientes/types";
 import { Destinatario } from "@/modules/destinatarios/types";
@@ -23,6 +25,9 @@ import { Carga } from "@/modules/cargas/types";
 import { Chofer } from "@/modules/choferes/types";
 import { Camion } from "@/modules/camiones/types";
 import { citaSchema } from "../schemas";
+
+// Importamos nuestro nuevo y flamante modal interactivo
+import { CargaSelectorModal } from "../../cargas/components/CargaSelectorModal";
 
 type CitaFormValues = z.infer<typeof citaSchema>;
 type CitaFormInput = z.input<typeof citaSchema>;
@@ -77,9 +82,28 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
     resolver: zodResolver(citaSchema),
     defaultValues: {
       idCliente: 0, idDestinatario: 0, idTerminalOrigen: 0,
-      idCarga: 0, observacion: ""
+      idCarga: 0, idUsuario: 0, idCamion: 0, observacion: ""
     } as CitaFormInput
   });
+
+  // 👇 LÓGICA DE UX: Observamos qué cliente se ha seleccionado
+  const idClienteSeleccionado = form.watch("idCliente") as number;
+  
+  // Filtramos las cargas disponibles para mostrar solo las de ese cliente
+  // Además, ocultamos las cargas que ya han sido entregadas o canceladas
+  const cargasDisponibles = data.cargas.filter((c) => {
+    const esDelCliente = typeof idClienteSeleccionado === "number" && idClienteSeleccionado > 0 ? c.cliente?.idCliente === idClienteSeleccionado : true;
+    const estaDisponible = c.estado !== "ENTREGADA" && c.estado !== "CANCELADA";
+    return esDelCliente && estaDisponible;
+  });
+
+  // Si se cambia el cliente, reseteamos la carga seleccionada para evitar incongruencias
+  useEffect(() => {
+    const idCargaActual = form.getValues("idCarga") as number;
+    if (idClienteSeleccionado && typeof idCargaActual === "number" && idCargaActual > 0) {
+      form.setValue("idCarga", 0);
+    }
+  }, [idClienteSeleccionado, form]);
 
   if (isLoadingCatalogos) {
     return (
@@ -96,7 +120,9 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
         onSubmit={form.handleSubmit((values) =>
           onSubmit({
             ...values,
+            // Aseguramos enviar idUsuario correctamente (la corrección que hicimos antes)
             idUsuario: values.idUsuario && values.idUsuario > 0 ? values.idUsuario : undefined,
+            idCamion: values.idCamion && values.idCamion > 0 ? values.idCamion : undefined,
           })
         )}
         className="space-y-4"
@@ -116,9 +142,7 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una opción">
                         {field.value
-                          ? data.clientes.find(
-                              (c) => c.idCliente === field.value,
-                            )?.nombresRazonSocial
+                          ? data.clientes.find((c) => c.idCliente === field.value)?.nombresRazonSocial
                           : null}
                       </SelectValue>
                     </SelectTrigger>
@@ -149,19 +173,14 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una opción">
                         {field.value
-                          ? data.destinatarios.find(
-                              (d) => d.idDestinatario === field.value,
-                            )?.nombreCompleto
+                          ? data.destinatarios.find((d) => d.idDestinatario === field.value)?.nombreCompleto
                           : null}
                       </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {data.destinatarios.map((d) => (
-                      <SelectItem
-                        key={d.idDestinatario}
-                        value={String(d.idDestinatario)}
-                      >
+                      <SelectItem key={d.idDestinatario} value={String(d.idDestinatario)}>
                         {d.nombreCompleto}
                       </SelectItem>
                     ))}
@@ -187,19 +206,14 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una opción">
                         {field.value
-                          ? data.terminales.find(
-                              (t) => t.idTerminal === field.value,
-                            )?.nombreUbicacion
+                          ? data.terminales.find((t) => t.idTerminal === field.value)?.nombreUbicacion
                           : null}
                       </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {data.terminales.map((t) => (
-                      <SelectItem
-                        key={t.idTerminal}
-                        value={String(t.idTerminal)}
-                      >
+                      <SelectItem key={t.idTerminal} value={String(t.idTerminal)}>
                         {t.nombreUbicacion}
                       </SelectItem>
                     ))}
@@ -223,19 +237,14 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una opción">
                         {field.value
-                          ? data.terminales.find(
-                              (t) => t.idTerminal === field.value,
-                            )?.nombreUbicacion
+                          ? data.terminales.find((t) => t.idTerminal === field.value)?.nombreUbicacion
                           : null}
                       </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {data.terminales.map((t) => (
-                      <SelectItem
-                        key={t.idTerminal}
-                        value={String(t.idTerminal)}
-                      >
+                      <SelectItem key={t.idTerminal} value={String(t.idTerminal)}>
                         {t.nombreUbicacion}
                       </SelectItem>
                     ))}
@@ -246,45 +255,27 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
             )}
           />
         </div>
+
+        {/* 👇 AQUÍ INTEGRAMOS EL MODAL 👇 */}
         <FormField
           control={form.control}
           name="idCarga"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Carga</FormLabel>
-              <Select
-                value={field.value ? String(field.value) : ""}
-                onValueChange={(value) => field.onChange(Number(value))}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione una opción">
-                      {field.value
-                        ? (() => {
-                            const ca = data.cargas.find(
-                              (ca) => ca.idCarga === field.value,
-                            );
-                            return ca
-                              ? `${ca.tipoCarga} (${ca.codigoSeguimiento})`
-                              : null;
-                          })()
-                        : null}
-                    </SelectValue>
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {data.cargas.map((ca) => (
-                    <SelectItem key={ca.idCarga} value={String(ca.idCarga)}>
-                      {ca.tipoCarga} ({ca.codigoSeguimiento})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <FormItem className="flex flex-col">
+              <FormLabel>Carga a Transportar</FormLabel>
+              <FormControl>
+                <CargaSelectorModal 
+                  cargas={cargasDisponibles} 
+                  selectedCargaId={typeof field.value === "number" ? field.value : undefined} 
+                  onSelect={(id: number) => field.onChange(id)} 
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="idUsuario"
@@ -299,20 +290,18 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una opción">
                         {field.value
-                          ? data.choferes.find((ch) => ch.idUsuario === field.value)?.nombresCompletos ??
-                            data.choferes.find((ch) => ch.idUsuario === field.value)?.username ??
-                            null
+                          ? (() => {
+                              const ch = data.choferes.find((ch) => ch.idUsuario === field.value);
+                              return ch ? `${ch.nombres} ${ch.apellidos}` : null;
+                            })()
                           : null}
                       </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {data.choferes.map((ch) => (
-                      <SelectItem
-                        key={ch.idUsuario}
-                        value={String(ch.idUsuario)}
-                      >
-                        {ch.nombresCompletos}
+                      <SelectItem key={ch.idUsuario} value={String(ch.idUsuario)}>
+                        {ch.nombres} {ch.apellidos}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -335,9 +324,7 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una opción">
                         {field.value
-                          ? data.camiones.find(
-                              (cm) => cm.idCamion === field.value,
-                            )?.placa
+                          ? data.camiones.find((cm) => cm.idCamion === field.value)?.placa
                           : null}
                       </SelectValue>
                     </SelectTrigger>
@@ -354,7 +341,6 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="diasEstimados"
@@ -367,7 +353,7 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecciona los días estimados" />
+                      <SelectValue placeholder="Días..." />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -390,7 +376,7 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
             <FormItem>
               <FormLabel>Observación</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input placeholder="Notas adicionales sobre la ruta o la cita..." {...field} />
               </FormControl>
             </FormItem>
           )}
