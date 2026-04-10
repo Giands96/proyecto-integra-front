@@ -29,8 +29,8 @@ export function CargaForm({ initialData, onSubmit, onCancel, loading }: CargaFor
   useEffect(() => {
     async function loadClientes() {
       try {
-        const response = await clienteService.listar();
-        setClientes(Array.isArray(response.content) ? response.content : []);
+        const response = await clienteService.listarTodos();
+        setClientes(Array.isArray(response) ? response : []);
       } catch (error) {
         console.error("Error al cargar clientes:", error);
       } finally {
