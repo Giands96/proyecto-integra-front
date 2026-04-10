@@ -51,7 +51,7 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
     async function loadData() {
       try {
         const [cl, de, te, ca, ch, cm] = await Promise.all([
-          clienteService.listar(),
+          clienteService.listarTodos(),
           destinatarioService.listar(),
           terminalService.listar(),
           cargaService.listar(),
@@ -60,7 +60,7 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
         ]);
 
         setData({
-          clientes: Array.isArray(cl.content) ? cl.content : [],
+          clientes: Array.isArray(cl) ? cl : [],
           destinatarios: Array.isArray(de.content) ? de.content : [],
           terminales: Array.isArray(te.content) ? te.content : [],
           cargas: Array.isArray(ca.content) ? ca.content : [],
