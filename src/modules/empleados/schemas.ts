@@ -5,7 +5,7 @@ export const empleadoSchema = z.object({
   apellidos: z.string().min(1, "Apellidos es requerido"),
   username: z.string().min(3, "Usuario es requerido"),
   password: z.string().min(6, "La contrasena debe tener al menos 6 caracteres"),
-  role: z.enum(["ADMIN", "OPERADOR", "CHOFER"], {
+  rol: z.enum(["ADMINISTRADOR", "OPERADOR", "CHOFER"], {
     message: "Rol es requerido",
   }),
 });
