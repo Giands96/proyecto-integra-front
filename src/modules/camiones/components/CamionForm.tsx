@@ -19,21 +19,26 @@ interface CamionFormProps {
 }
 
 export function CamionForm({ initialData, onSubmit, onCancel, loading }: CamionFormProps) {
+  const defaultFormValues: CamionFormValues = {
+    placa: "",
+    disponibilidad: 1,
+  };
+
   const form = useForm<CamionFormValues>({
     resolver: zodResolver(camionSchema),
-    defaultValues: {
-      placa: "",
-      disponibilidad: 1,
-    },
+    defaultValues: defaultFormValues,
   });
 
   useEffect(() => {
     if (initialData) {
       form.reset({
         placa: initialData.placa,
-        disponibilidad: initialData.disponibilidad,
+        disponibilidad: Number(initialData.disponibilidad) === 0 ? 0 : 1,
       });
+      return;
     }
+
+    form.reset(defaultFormValues);
   }, [initialData, form]);
 
   const handleFormSubmit: SubmitHandler<CamionFormValues> = (data) => {
