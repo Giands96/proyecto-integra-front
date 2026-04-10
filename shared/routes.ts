@@ -9,6 +9,9 @@ export const API_ROUTES = {
   EMPLEADOS: '/api/empleados/',
   OPERADORES: '/api/empleados/operador',
   CLIENTES: '/api/clientes',
+  CLIENTES_PAGINADO: '/api/clientes/',
+  CLIENTES_LISTAR: '/api/clientes/listar',
+  CLIENTES_CREAR: '/api/clientes/crear',
   DESTINATARIOS: '/api/destinatarios',
   TERMINALES: '/api/terminales',
   CITAS: {
