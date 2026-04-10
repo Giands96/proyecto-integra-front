@@ -23,7 +23,7 @@ export function EmpleadoForm({ onSubmit, onCancel, loading }: EmpleadoFormProps)
       apellidos: "",
       username: "",
       password: "",
-      role: "OPERADOR",
+      rol: "OPERADOR",
     },
   });
 
@@ -89,7 +89,7 @@ export function EmpleadoForm({ onSubmit, onCancel, loading }: EmpleadoFormProps)
 
         <FormField
           control={form.control}
-          name="role"
+          name="rol"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Rol</FormLabel>
@@ -99,7 +99,7 @@ export function EmpleadoForm({ onSubmit, onCancel, loading }: EmpleadoFormProps)
                     <SelectValue placeholder="Selecciona un rol" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ADMIN">ADMIN</SelectItem>
+                    <SelectItem value="ADMINISTRADOR">ADMINISTRADOR</SelectItem>
                     <SelectItem value="OPERADOR">OPERADOR</SelectItem>
                     <SelectItem value="CHOFER">CHOFER</SelectItem>
                   </SelectContent>
