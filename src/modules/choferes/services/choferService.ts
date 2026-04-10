@@ -4,10 +4,7 @@ import { API_ROUTES } from "@/../shared/routes";
 import { Chofer, ChoferPaginatedResponse, ChoferUpdatePayload } from "../types";
 
 const USER_ENDPOINTS = [
-  "/api/usuarios",
-  "/api/auth/usuarios",
-  "/api/auth/users",
-  "/api/users",
+  "/api/empleados/chofer",
 ];
 
 type ChoferApiItem = {
