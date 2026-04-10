@@ -18,31 +18,34 @@ interface CamionFormProps {
   loading?: boolean;
 }
 
-export function CamionForm({ initialData, onSubmit, onCancel, loading }: CamionFormProps) {
-  const defaultFormValues: CamionFormValues = {
-    placa: "",
-    disponibilidad: 1,
-  };
+const DEFAULT_FORM_VALUES: CamionFormValues = {
+  placa: "",
+  disponible: true,
+};
 
+export function CamionForm({ initialData, onSubmit, onCancel, loading }: CamionFormProps) {
   const form = useForm<CamionFormValues>({
     resolver: zodResolver(camionSchema),
-    defaultValues: defaultFormValues,
+    defaultValues: DEFAULT_FORM_VALUES,
   });
 
   useEffect(() => {
     if (initialData) {
       form.reset({
         placa: initialData.placa,
-        disponibilidad: Number(initialData.disponibilidad) === 0 ? 0 : 1,
+        disponible: Number(initialData.disponible) === 1,
       });
       return;
     }
 
-    form.reset(defaultFormValues);
+    form.reset(DEFAULT_FORM_VALUES);
   }, [initialData, form]);
 
   const handleFormSubmit: SubmitHandler<CamionFormValues> = (data) => {
-    onSubmit(data as Camion);
+    onSubmit({
+      placa: data.placa,
+      disponible: data.disponible ? 1 : 0,
+    });
   };
 
   return (
@@ -62,15 +65,17 @@ export function CamionForm({ initialData, onSubmit, onCancel, loading }: CamionF
           Estado
         </label>
         <select
-          id="disponibilidad"
+          id="disponible"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          {...form.register("disponibilidad", { valueAsNumber: true })}
+          {...form.register("disponible", {
+            setValueAs: (value) => value === true || value === "true",
+          })}
         >
-          <option value={1}>Disponible</option>
-          <option value={0}>No Disponible</option>
+          <option value="true">Disponible</option>
+          <option value="false">No Disponible</option>
         </select>
-        {form.formState.errors.disponibilidad && (
-          <p className="text-sm text-red-500">{form.formState.errors.disponibilidad.message}</p>
+        {form.formState.errors.disponible && (
+          <p className="text-sm text-red-500">{form.formState.errors.disponible.message}</p>
         )}
       </div>
 

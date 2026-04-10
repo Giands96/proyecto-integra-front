@@ -30,8 +30,8 @@ export function CamionTable({ camiones, onEdit, onDelete }: CamionTableProps) {
               <TableCell>{camion.idCamion}</TableCell>
               <TableCell className="font-medium">{camion.placa}</TableCell>
               <TableCell>
-                <Badge variant={camion.disponibilidad === 1 ? "default" : "destructive"}>
-                  {camion.disponibilidad === 1 ? "Disponible" : "No Disponible"}
+                <Badge variant={camion.disponible === 1 ? "default" : "destructive"}>
+                  {camion.disponible === 1 ? "Disponible" : "No Disponible"}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
