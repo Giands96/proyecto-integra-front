@@ -8,8 +8,9 @@ import { ChoferTable } from "@/modules/choferes/components/ChoferTable";
 import { choferService } from "@/modules/choferes/services/choferService";
 import { Chofer, ChoferUpdatePayload } from "@/modules/choferes/types";
 
+
 const ChoferFormLazy = dynamic(
-  () => import("@/modules/choferes/components/ChoferForm").then((mod) => mod.ChoferForm),
+  () => import("@/modules/choferes/components/ChoferForm").then((mod) => ({ default: mod.ChoferForm })),
   {
     ssr: false,
     loading: () => <p className="text-sm text-muted-foreground">Cargando formulario...</p>,
