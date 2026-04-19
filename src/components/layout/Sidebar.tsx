@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { UserDropdown } from "@/components/layout/UserDropdown";
+import { useAuthStore } from "@/store/authStore";
 import { 
   Users, 
   Truck, 
@@ -31,23 +32,48 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const role = useAuthStore((state) => state.role);
+
+  const isOperador = (role || "").toUpperCase().includes("OPERADOR");
+  const isChofer = (role || "").toUpperCase().includes("CHOFER");
+  const visibleNavItems = isOperador
+    ? navItems.filter((item) =>
+        [
+          "/dashboard/clientes",
+          "/dashboard/camiones",
+          "/dashboard/choferes",
+          "/dashboard/terminales",
+          "/dashboard/cargas",
+          "/dashboard/citas",
+        ].includes(item.href)
+      )
+    : isChofer
+    ? navItems.filter((item) =>
+        [
+          "/dashboard/citas",
+          "/dashboard/cargas",
+        ].includes(item.href)
+      )
+    : navItems;
+
+    
 
   useEffect(() => {
-    navItems.forEach((item) => {
+    visibleNavItems.forEach((item) => {
       router.prefetch(item.href);
     });
-  }, [router]);
+  }, [router, visibleNavItems]);
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-zinc-200 bg-white">
-      <div className="space-y-3 border-b px-4 py-4">
+    <aside className="flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+      <div className="space-y-3 border-b border-sidebar-border/80 bg-sidebar-accent/30 px-4 py-4">
         <div className="flex h-8 items-center px-2">
-          <span className="text-xl font-bold text-zinc-900">Ransa Admin</span>
+          <span className="text-xl font-bold tracking-tight">Ransa Admin</span>
         </div>
         <UserDropdown />
       </div>
       <nav className="flex-1 space-y-1 p-4">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           return (
@@ -57,8 +83,8 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive 
-                  ? "bg-zinc-900 text-white" 
-                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm" 
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}
             >
               <Icon className="h-4 w-4" />
@@ -67,6 +93,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-    </div>
+    </aside>
   );
 }
