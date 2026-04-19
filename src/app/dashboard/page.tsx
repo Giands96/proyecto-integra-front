@@ -42,7 +42,7 @@ type DashboardData = {
   citasPorEstado: Array<{ name: string; value: number }>;
 };
 
-const PIE_COLORS = ["#0f172a", "#334155", "#64748b", "#94a3b8", "#cbd5e1"];
+const PIE_COLORS = ["#2150c5", "#2f6ecf", "#22a8b8", "#67b6b8", "#9bcad2"];
 
 const quickAccess = [
   { label: "Clientes", href: "/dashboard/clientes", icon: Users },
@@ -65,8 +65,12 @@ function toTitle(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function getDisponibilidadSplit<T extends { disponibilidad: number }>(items: T[]) {
-  const disponibles = items.filter((item) => item.disponibilidad > 0).length;
+function getDisponibilidadSplit<T>(items: T[]) {
+  const disponibles = items.filter((item) => {
+    const disponibilidad = (item as { disponibilidad?: number }).disponibilidad ?? 0;
+    return disponibilidad > 0;
+  }).length;
+
   return {
     disponibles,
     noDisponibles: items.length - disponibles,
@@ -168,7 +172,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
+      <div className="rounded-2xl border border-border/70 bg-card/90 p-6 shadow-sm">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard Principal</h1>
         <p className="text-muted-foreground">
           Vista consolidada de tu operacion logistica con indicadores y distribuciones clave.
@@ -176,43 +180,43 @@ export default function DashboardPage() {
       </div>
 
       {error && (
-        <Card className="border-destructive/30">
+        <Card className="border-destructive/35 bg-destructive/5">
           <CardContent className="pt-4 text-sm text-destructive">{error}</CardContent>
         </Card>
       )}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardDescription>Total Clientes</CardDescription>
             <CardTitle className="text-3xl">{data.clientes}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardDescription>Total Camiones</CardDescription>
             <CardTitle className="text-3xl">{data.camiones}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardDescription>Total Choferes</CardDescription>
             <CardTitle className="text-3xl">{data.choferes}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardDescription>Total Terminales</CardDescription>
             <CardTitle className="text-3xl">{data.terminales}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardDescription>Total Cargas</CardDescription>
             <CardTitle className="text-3xl">{data.cargas}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardDescription>Total Citas</CardDescription>
             <CardTitle className="text-3xl">{data.citas}</CardTitle>
@@ -221,7 +225,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardTitle>Disponibilidad de Camiones</CardTitle>
             <CardDescription>Distribucion actual de la flota</CardDescription>
@@ -234,14 +238,20 @@ export default function DashboardPage() {
                     <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "0.75rem",
+                    borderColor: "rgba(100, 116, 139, 0.25)",
+                    backgroundColor: "rgba(255,255,255,0.95)",
+                  }}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardTitle>Disponibilidad de Choferes</CardTitle>
             <CardDescription>Estado operativo del personal</CardDescription>
@@ -254,14 +264,20 @@ export default function DashboardPage() {
                     <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "0.75rem",
+                    borderColor: "rgba(100, 116, 139, 0.25)",
+                    backgroundColor: "rgba(255,255,255,0.95)",
+                  }}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
             <CardTitle>Estado de Citas</CardTitle>
             <CardDescription>Recuento por estado registrado</CardDescription>
@@ -281,7 +297,13 @@ export default function DashboardPage() {
                     <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "0.75rem",
+                    borderColor: "rgba(100, 116, 139, 0.25)",
+                    backgroundColor: "rgba(255,255,255,0.95)",
+                  }}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -296,10 +318,10 @@ export default function DashboardPage() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 text-sm transition hover:bg-muted"
+              className="flex items-center justify-between rounded-xl border border-border/70 bg-card/90 px-4 py-3 text-sm shadow-sm transition hover:border-primary/35 hover:bg-secondary/55"
             >
               <span className="flex items-center gap-2 font-medium">
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4 text-primary" />
                 {item.label}
               </span>
               <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
