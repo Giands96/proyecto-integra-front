@@ -28,6 +28,19 @@ export function UserDropdown() {
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
 
+  const isChofer = (role || "").toUpperCase().includes("CHOFER");
+  const isOperador = (role || "").toUpperCase().includes("OPERADOR");
+
+  const visibleLinks = quickLinks.filter((link) => {
+    if (isChofer) {
+      return ["/dashboard/citas", "/dashboard/cargas"].includes(link.href);
+    } else if (isOperador) {
+      return ["/dashboard/clientes", "/dashboard/camiones", "/dashboard/choferes", "/dashboard/terminales", "/dashboard/cargas", "/dashboard/citas"].includes(link.href);
+    }
+    return true; // Para otros roles, mostrar todos los enlaces
+  });
+
+
   const displayName = user?.usuario || "Usuario";
 
   const handleLogout = () => {
@@ -36,20 +49,20 @@ export function UserDropdown() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="flex w-full  items-center justify-between rounded-lg border px-3 py-2 text-left hover:bg-muted/50 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    <DropdownMenu >
+      <DropdownMenuTrigger className="flex w-full items-center justify-between rounded-lg border border-sidebar-border  bg-sidebar-accent/20 px-3 py-2 text-left hover:bg-sidebar-accent/60 outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
         <span className="flex items-center gap-2 overflow-hidden">
-          <CircleUserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="truncate text-sm font-medium">{displayName}</span>
+          <CircleUserRound className="h-4 w-4 shrink-0 text-sidebar-foreground/75" />
+          <span className="truncate text-sm font-medium text-sidebar-foreground">{displayName}</span>
         </span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-foreground/75" />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent side="bottom" align="start" className="w-64 bg-white">
+      <DropdownMenuContent side="bottom" align="start" className=" w-64 border-border/70 bg-white">
         <DropdownMenuGroup>
           <DropdownMenuLabel>
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 rounded-full bg-muted px-2 py-2 border-black border">
+              <div className="flex items-center gap-2 rounded-full border border-border bg-white px-3 py-2">
                 <span className="text-sm font-semibold text-foreground">{displayName}</span>
                 <span className="text-xs text-muted-foreground">{role || "Sin rol"}</span>
               </div>
@@ -60,7 +73,7 @@ export function UserDropdown() {
         <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
-          {quickLinks.map((item) => {
+          {visibleLinks.map((item) => {
             const Icon = item.icon;
             return (
               <DropdownMenuItem key={item.href} onClick={() => router.push(item.href)}>
@@ -73,7 +86,7 @@ export function UserDropdown() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className={"hover:bg-red-700 transition-colors hover:text-white"} variant="default" onClick={handleLogout}>
+        <DropdownMenuItem className={"transition-colors hover:bg-destructive hover:text-destructive-foreground"} variant="default" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
           Cerrar sesion
         </DropdownMenuItem>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Chofer } from "../types";
+import { useAuthStore } from "@/store/authStore";
 
 interface ChoferTableProps {
   choferes: Chofer[];
@@ -12,6 +13,9 @@ interface ChoferTableProps {
 }
 
 export function ChoferTable({ choferes, onEdit }: ChoferTableProps) {
+  const role = useAuthStore((state) => state.role);
+  const isOperador = (role || "").toUpperCase().includes("OPERADOR");
+
   return (
     <div className="rounded-md border bg-white">
       <Table>
@@ -39,7 +43,13 @@ export function ChoferTable({ choferes, onEdit }: ChoferTableProps) {
               <TableCell>{chofer.fechaCreacion ? new Date(chofer.fechaCreacion).toLocaleDateString() : "N/A"}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => onEdit(chofer)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEdit(chofer)}
+                    disabled={isOperador}
+                    title={isOperador ? "Operador no puede editar chofer" : "Editar chofer"}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
                 </div>
