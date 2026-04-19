@@ -33,9 +33,9 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-100">
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-auto p-8">
+      <main className="flex-1 overflow-auto bg-gradient-to-b from-secondary/35 via-background to-background p-6 md:p-8">
         {children}
       </main>
     </div>
