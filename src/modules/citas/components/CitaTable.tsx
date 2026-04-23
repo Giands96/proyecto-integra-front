@@ -3,6 +3,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DetalleCita } from "../types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
 
 const ESTADOS = ["POR_ASIGNAR", "PROGRAMADO", "EN_CAMINO", "ENTREGADO", "CANCELADO"] as const;
 
@@ -77,10 +79,11 @@ function getChoferLabel(detalle: DetalleCita) {
 interface CitaTableProps {
   detalles: DetalleCita[];
   onEstadoChange: (idDetalle: number, estado: string) => void;
+  onViewDetail: (detalle: DetalleCita) => void;
   updatingEstadoId?: number | null;
 }
 
-export function CitaTable({ detalles, onEstadoChange, updatingEstadoId }: CitaTableProps) {
+export function CitaTable({ detalles, onEstadoChange, onViewDetail, updatingEstadoId }: CitaTableProps) {
   return (
     <div className="rounded-md border bg-white">
       <Table>
@@ -93,6 +96,7 @@ export function CitaTable({ detalles, onEstadoChange, updatingEstadoId }: CitaTa
             <TableHead>Chofer / Camión</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Modificar estado</TableHead>
+            <TableHead className="text-right">Detalle</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -158,6 +162,16 @@ export function CitaTable({ detalles, onEstadoChange, updatingEstadoId }: CitaTa
                     ))}
                   </SelectContent>
                 </Select>
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onViewDetail(d)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver detalle
+                </Button>
               </TableCell>
             </TableRow>
           ))}
