@@ -22,8 +22,45 @@ export default function CitasPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDetalle, setSelectedDetalle] = useState<DetalleCita | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [estadoActualizandoId, setEstadoActualizandoId] = useState<number | null>(null);
+
+  function textOrFallback(value: unknown, fallback = "-") {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+    if (typeof value === "number") {
+      return String(value);
+    }
+    return fallback;
+  }
+
+  function formatDate(value: string | undefined) {
+    if (!value) {
+      return "-";
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleString();
+  }
+
+  function getNombreChofer(detalle: DetalleCita) {
+    const rawUsuario = detalle.usuario as unknown as Record<string, unknown> | undefined;
+    const nombres = textOrFallback(rawUsuario?.nombres, "");
+    const apellidos = textOrFallback(rawUsuario?.apellidos, "");
+    const fullName = `${nombres} ${apellidos}`.trim();
+
+    if (fullName) {
+      return fullName;
+    }
+
+    return textOrFallback(rawUsuario?.username ?? rawUsuario?.usuario ?? detalle.idUsuario, "No asignado");
+  }
 
   useEffect(() => {
     fetchCitas(true);
@@ -114,6 +151,7 @@ export default function CitasPage() {
         <CitaTable
           detalles={detalles}
           onEstadoChange={handleEstadoChange}
+          onViewDetail={(detalle) => setSelectedDetalle(detalle)}
           updatingEstadoId={estadoActualizandoId}
         />
       )}
@@ -129,6 +167,76 @@ export default function CitasPage() {
               onCancel={() => setIsDialogOpen(false)}
               loading={formLoading}
             />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(selectedDetalle)} onOpenChange={(open) => !open && setSelectedDetalle(null)}>
+        <DialogContent className="sm:max-w-[720px]">
+          <DialogHeader>
+            <DialogTitle>Detalle de Cita</DialogTitle>
+          </DialogHeader>
+          {selectedDetalle ? (
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">ID detalle</p>
+                <p className="font-medium">{selectedDetalle.idDetalle}</p>
+              </div>
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Estado</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.estado)}</p>
+              </div>
+
+              <div className="rounded-md border p-3 sm:col-span-2">
+                <p className="text-xs uppercase text-muted-foreground">Cliente</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.cliente?.nombresRazonSocial)}</p>
+              </div>
+
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Destinatario</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.destinatario?.nombresRazonSocial)}</p>
+              </div>
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Fecha de registro</p>
+                <p className="font-medium">{formatDate(selectedDetalle.fechaRegistro)}</p>
+              </div>
+
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Origen</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.terminalOrigen?.nombreUbicacion)}</p>
+              </div>
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Destino</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.terminalDestino?.nombreUbicacion)}</p>
+              </div>
+
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Chofer</p>
+                <p className="font-medium">{getNombreChofer(selectedDetalle)}</p>
+              </div>
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Camión</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.camion?.placa)}</p>
+              </div>
+
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Carga</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.carga?.tipoCarga)}</p>
+              </div>
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Seguimiento</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.carga?.codigoSeguimiento)}</p>
+              </div>
+
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Días estimados</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.diasEstimados)}</p>
+              </div>
+              <div className="rounded-md border p-3 sm:col-span-2">
+                <p className="text-xs uppercase text-muted-foreground">Observación</p>
+                <p className="font-medium">{textOrFallback(selectedDetalle.observacion, "Sin observaciones")}</p>
+              </div>
+            </div>
           ) : null}
         </DialogContent>
       </Dialog>
