@@ -14,7 +14,11 @@ interface ChoferTableProps {
 
 export function ChoferTable({ choferes, onEdit }: ChoferTableProps) {
   const role = useAuthStore((state) => state.role);
-  const isOperador = (role || "").toUpperCase().includes("OPERADOR");
+  const normalizedRole = (role || "").toUpperCase();
+  const canEditChofer =
+    normalizedRole.includes("ADMINISTRADOR") ||
+    normalizedRole.includes("ROLE_ADMIN") ||
+    normalizedRole === "ADMIN";
 
   return (
     <div className="rounded-md border bg-white">
@@ -47,8 +51,8 @@ export function ChoferTable({ choferes, onEdit }: ChoferTableProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() => onEdit(chofer)}
-                    disabled={isOperador}
-                    title={isOperador ? "Operador no puede editar chofer" : "Editar chofer"}
+                    disabled={!canEditChofer}
+                    title={canEditChofer ? "Editar chofer" : "Solo administrador puede editar chofer"}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>

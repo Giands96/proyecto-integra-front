@@ -3,8 +3,12 @@ import { getWithCache, invalidateCacheByPrefix } from "@/lib/apiCache";
 import { API_ROUTES } from "@/../shared/routes";
 import { Chofer, ChoferPaginatedResponse, ChoferUpdatePayload } from "../types";
 
-const USER_ENDPOINTS = [
+const CHOFER_LIST_ENDPOINTS = [
   "/api/empleados/chofer",
+];
+
+const CHOFER_UPDATE_ENDPOINTS = [
+  "/api/empleados",
 ];
 
 type ChoferApiItem = {
@@ -97,7 +101,7 @@ export const choferService = {
   listar: async (page: number = 0, size: number = 10) => {
     let lastError: unknown;
 
-    for (const endpoint of USER_ENDPOINTS) {
+    for (const endpoint of CHOFER_LIST_ENDPOINTS) {
       try {
         const data = await getWithCache<unknown>(`${endpoint}?page=${page}&size=${size}`, undefined, 60000);
         return toPaginatedChoferes(data);
@@ -111,10 +115,11 @@ export const choferService = {
   actualizar: async (id: number, payload: ChoferUpdatePayload) => {
     let lastError: unknown;
 
-    for (const endpoint of USER_ENDPOINTS) {
+    for (const endpoint of CHOFER_UPDATE_ENDPOINTS) {
       try {
         const response = await api.put<Chofer>(`${endpoint}/${id}`, payload);
-        USER_ENDPOINTS.forEach((item) => invalidateCacheByPrefix(item));
+        CHOFER_LIST_ENDPOINTS.forEach((item) => invalidateCacheByPrefix(item));
+        CHOFER_UPDATE_ENDPOINTS.forEach((item) => invalidateCacheByPrefix(item));
         invalidateCacheByPrefix(API_ROUTES.CHOFERES);
         return response.data;
       } catch (error) {
@@ -125,7 +130,8 @@ export const choferService = {
     throw lastError ?? new Error("No se pudo actualizar el chofer");
   },
   invalidateCache: () => {
-    USER_ENDPOINTS.forEach((endpoint) => invalidateCacheByPrefix(endpoint));
+    CHOFER_LIST_ENDPOINTS.forEach((endpoint) => invalidateCacheByPrefix(endpoint));
+    CHOFER_UPDATE_ENDPOINTS.forEach((endpoint) => invalidateCacheByPrefix(endpoint));
     invalidateCacheByPrefix(API_ROUTES.CHOFERES);
   },
 };

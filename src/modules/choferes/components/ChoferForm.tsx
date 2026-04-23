@@ -62,7 +62,7 @@ export function ChoferForm({ initialData, onSubmit, onCancel, loading }: ChoferF
             <FormItem>
               <FormLabel>Usuario</FormLabel>
               <FormControl>
-                <Input placeholder="chofer01" {...field} />
+                <Input readOnly placeholder="chofer01" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -96,19 +96,8 @@ export function ChoferForm({ initialData, onSubmit, onCancel, loading }: ChoferF
             )}
           />
         </div>
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nueva contrasena (opcional)</FormLabel>
-              <FormControl>
-                <Input type="password" placeholder="Dejar vacio para mantener la actual" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        
+        
         <div className="flex justify-end gap-4 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
           <Button type="submit" disabled={loading}>
