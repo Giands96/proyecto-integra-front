@@ -23,6 +23,7 @@ export default function ChoferesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingChofer, setEditingChofer] = useState<Chofer | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchChoferes();
@@ -46,6 +47,7 @@ export default function ChoferesPage() {
     }
 
     setFormLoading(true);
+    setSubmitError(null);
     try {
       await choferService.actualizar(editingChofer.idUsuario, data);
       setIsDialogOpen(false);
@@ -53,6 +55,12 @@ export default function ChoferesPage() {
       fetchChoferes();
     } catch (error) {
       console.error("Error saving chofer:", error);
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 403) {
+        setSubmitError("No tienes permisos para actualizar choferes. Esta acción requiere rol ADMINISTRADOR.");
+      } else {
+        setSubmitError("No se pudo actualizar el chofer. Intenta nuevamente.");
+      }
     } finally {
       setFormLoading(false);
     }
@@ -74,15 +82,32 @@ export default function ChoferesPage() {
       ) : (
         <ChoferTable 
           choferes={choferes} 
-          onEdit={(c) => { setEditingChofer(c); setIsDialogOpen(true); }}
+          onEdit={(c) => {
+            setSubmitError(null);
+            setEditingChofer(c);
+            setIsDialogOpen(true);
+          }}
         />
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setSubmitError(null);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle>Editar Chofer</DialogTitle>
           </DialogHeader>
+          {submitError ? (
+            <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              {submitError}
+            </p>
+          ) : null}
           {isDialogOpen && editingChofer ? (
             <ChoferFormLazy
               initialData={editingChofer}
@@ -90,6 +115,7 @@ export default function ChoferesPage() {
               onCancel={() => {
                 setIsDialogOpen(false);
                 setEditingChofer(null);
+                setSubmitError(null);
               }}
               loading={formLoading}
             />
