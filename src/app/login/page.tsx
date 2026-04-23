@@ -11,25 +11,18 @@ export default function LoginPage() {
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
 
   useEffect(() => {
-    if (!hasHydrated) {
-      return;
-    }
+    if (!hasHydrated) return;
 
     if (token) {
       router.replace("/dashboard");
     }
   }, [token, hasHydrated, router]);
 
-  if (!hasHydrated) {
-    return null;
-  }
-
-  if (token) {
-    return null;
-  }
+  if (!hasHydrated) return null;
+  if (token) return null;
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-zinc-100">
+    <div className="min-h-screen w-full bg-zinc-50">
       <LoginForm />
     </div>
   );
