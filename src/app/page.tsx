@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Truck, ShieldCheck, Search, ArrowRight } from "lucide-react";
+import { Truck, ShieldCheck, Search } from "lucide-react";
 import React from "react";
-
 
 export default function HomePage() {
   return (
@@ -15,10 +14,10 @@ export default function HomePage() {
           <span className="ml-2 text-xl font-bold text-foreground">Ransa Logística</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" href="/tracking">
+          <Link className="text-sm font-medium text-muted-foreground bg-blue-500 px-4 py-2 text-white rounded-md transition-colors hover:bg-blue-800 " href="/tracking">
             Rastreo
           </Link>
-          <Link className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" href="/login">
+          <Link className="text-sm font-medium text-muted-foreground bg-neutral-800  text-white px-4 py-2 rounded-md transition-colors hover:bg-neutral-600" href="/login">
             Admin
           </Link>
         </nav>
@@ -27,8 +26,8 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="w-full bg-gradient-to-b from-secondary/50 via-background to-background py-14 md:py-24 lg:py-32 xl:py-40">
-          <div className="container mx-auto px-4 md:px-6">
+        <section className="w-full h-[700px] bg-[url('../assets/bg-hero.jpeg')] bg-no-repeat bg-cover via-background to-background py-14 md:py-24 lg:py-32 xl:py-40">
+          <div className="container mx-auto px-4 md:px-6 ">
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl/none">
@@ -40,17 +39,12 @@ export default function HomePage() {
               </div>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link href="/tracking">
-                  <Button size="lg" className="px-8 shadow-md shadow-primary/20">
-                    <Search className="mr-2 h-4 w-4" />
-                    Rastrear Pedido
+                  <Button size="lg" className="bg-cyan-900 hover:bg-cyan-600 px-10 py-4 shadow-md shadow-primary/20">
+                    <Search className=" mr-2 h-4 w-4" />
+                    Rastrear mi pedido
                   </Button>
                 </Link>
-                <Link href="/login">
-                  <Button variant="outline" size="lg" className="border-primary/25 bg-card px-8 text-foreground hover:bg-secondary/70">
-                    Portal Administrativo
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                
               </div>
             </div>
           </div>
