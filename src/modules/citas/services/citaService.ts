@@ -1,14 +1,7 @@
 import api from "@/lib/axios";
 import { getWithCache, invalidateCacheByPrefix } from "@/lib/apiCache";
 import { API_ROUTES } from "@/../shared/routes";
-import { DetalleCitaPaginatedResponse, CitaCompletaRequest, EstadoCita } from "../types";
-
-const ESTADO_ENDPOINTS = [
-  (id: number) => `${API_ROUTES.CITAS.DETALLES}/${id}/estado`,
-  (id: number) => `${API_ROUTES.CITAS.BASE}/${id}/estado`,
-  (id: number) => `${API_ROUTES.CITAS.DETALLES}/${id}`,
-  (id: number) => `${API_ROUTES.CITAS.BASE}/${id}`,
-];
+import { CitaPaginatedResponse, CitaCompletaRequest, EstadoCita } from "../types";
 
 type GenericRecord = Record<string, unknown>;
 
@@ -33,15 +26,15 @@ function toText(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-function normalizeUsuario(rawDetalle: GenericRecord): GenericRecord | undefined {
+function normalizeUsuario(rawCita: GenericRecord): GenericRecord | undefined {
   const candidatos = [
-    rawDetalle.usuario,
-    rawDetalle.chofer,
-    rawDetalle.usuarioAsignado,
-    rawDetalle.choferAsignado,
-    rawDetalle.empleado,
-    rawDetalle.user,
-    rawDetalle.asignado,
+    rawCita.usuario,
+    rawCita.chofer,
+    rawCita.usuarioAsignado,
+    rawCita.choferAsignado,
+    rawCita.empleado,
+    rawCita.user,
+    rawCita.asignado,
   ];
 
   for (const candidato of candidatos) {
@@ -54,29 +47,44 @@ function normalizeUsuario(rawDetalle: GenericRecord): GenericRecord | undefined 
   return undefined;
 }
 
-function normalizeDetalle(item: unknown) {
-  const rawDetalle = asRecord(item);
-  const usuario = normalizeUsuario(rawDetalle);
+function normalizeCita(item: unknown) {
+  const rawCita = asRecord(item);
+  const usuario = normalizeUsuario(rawCita);
+  const idCita =
+    toNumber(rawCita.idCita) ??
+    toNumber(rawCita.id) ??
+    0;
+
   const idUsuario =
-    toNumber(rawDetalle.idUsuario) ??
+    toNumber(rawCita.idUsuario) ??
     toNumber(usuario?.idUsuario) ??
     toNumber(usuario?.id);
 
   const estado =
-    toText(rawDetalle.estado) ||
-    toText(rawDetalle.estadoCita) ||
-    toText(rawDetalle.status) ||
+    toText(rawCita.estado) ||
+    toText(rawCita.estadoCita) ||
+    toText(rawCita.status) ||
     "POR_ASIGNAR";
 
+  const fechaCreacion =
+    toText(rawCita.fechaCreacion) ||
+    toText(rawCita.fechaRegistro) ||
+    toText(rawCita.createdAt);
+
+  const diasEstimados = toNumber(rawCita.diasEstimados) ?? 0;
+
   return {
-    ...rawDetalle,
+    ...rawCita,
+    idCita,
     usuario,
     idUsuario,
+    fechaCreacion,
+    diasEstimados,
     estado,
   };
 }
 
-function toPaginatedDetalles(payload: unknown): DetalleCitaPaginatedResponse {
+function toPaginatedCitas(payload: unknown): CitaPaginatedResponse {
   const parsedPayload = asRecord(payload);
   const content = Array.isArray(parsedPayload.content)
     ? parsedPayload.content
@@ -84,7 +92,7 @@ function toPaginatedDetalles(payload: unknown): DetalleCitaPaginatedResponse {
       ? payload
       : [];
 
-  const normalizedContent = content.map((item) => normalizeDetalle(item));
+  const normalizedContent = content.map((item) => normalizeCita(item));
 
   if (Array.isArray(parsedPayload.content)) {
     const totalElements = toNumber(parsedPayload.totalElements) ?? normalizedContent.length;
@@ -94,7 +102,7 @@ function toPaginatedDetalles(payload: unknown): DetalleCitaPaginatedResponse {
     const totalPages = toNumber(parsedPayload.totalPages) ?? 1;
 
     return {
-      content: normalizedContent as DetalleCitaPaginatedResponse["content"],
+      content: normalizedContent as CitaPaginatedResponse["content"],
       totalPages,
       totalElements,
       size,
@@ -107,7 +115,7 @@ function toPaginatedDetalles(payload: unknown): DetalleCitaPaginatedResponse {
   }
 
   return {
-    content: normalizedContent as DetalleCitaPaginatedResponse["content"],
+    content: normalizedContent as CitaPaginatedResponse["content"],
     totalPages: 1,
     totalElements: normalizedContent.length,
     size: normalizedContent.length,
@@ -120,30 +128,51 @@ function toPaginatedDetalles(payload: unknown): DetalleCitaPaginatedResponse {
 }
 
 export const citaService = {
-  listarDetalles: async (page: number = 0, size: number = 10) => {
-    const data = await getWithCache<unknown>(API_ROUTES.CITAS.DETALLES, {
+  listar: async (page: number = 0, size: number = 10) => {
+    const data = await getWithCache<unknown>(API_ROUTES.CITAS.BASE, {
       params: { page, size },
     }, 60000);
 
-    return toPaginatedDetalles(data);
+    return toPaginatedCitas(data);
+  },
+  listarDetalles: async (page: number = 0, size: number = 10) => {
+    return citaService.listar(page, size);
   },
   guardarCompleta: async (data: CitaCompletaRequest) => {
     const response = await api.post<string>(API_ROUTES.CITAS.GUARDAR, data);
     invalidateCacheByPrefix(API_ROUTES.CITAS.BASE);
     return response.data;
   },
-  actualizarEstado: async (idDetalle: number, estado: EstadoCita | string) => {
+  actualizarEstado: async (idCita: number, estado: EstadoCita | string) => {
+    const endpoint = API_ROUTES.CITAS.ACTUALIZAR_ESTADO(idCita);
     let lastError: unknown;
 
-    for (const buildEndpoint of ESTADO_ENDPOINTS) {
-      try {
-        const response = await api.put(buildEndpoint(idDetalle), { estado });
-        invalidateCacheByPrefix(API_ROUTES.CITAS.BASE);
-        invalidateCacheByPrefix(API_ROUTES.CITAS.DETALLES);
-        return response.data;
-      } catch (error) {
-        lastError = error;
-      }
+    try {
+      const response = await api.put(endpoint, { estado });
+      invalidateCacheByPrefix(API_ROUTES.CITAS.BASE);
+      return response.data;
+    } catch (error) {
+      lastError = error;
+    }
+
+    try {
+      const response = await api.put(endpoint, null, {
+        params: { estado },
+      });
+      invalidateCacheByPrefix(API_ROUTES.CITAS.BASE);
+      return response.data;
+    } catch (error) {
+      lastError = error;
+    }
+
+    try {
+      const response = await api.put(endpoint, null, {
+        params: { nuevoEstado: estado },
+      });
+      invalidateCacheByPrefix(API_ROUTES.CITAS.BASE);
+      return response.data;
+    } catch (error) {
+      lastError = error;
     }
 
     throw lastError ?? new Error("No se pudo actualizar el estado de la cita");

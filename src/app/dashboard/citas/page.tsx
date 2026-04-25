@@ -7,7 +7,7 @@ import { Plus, Loader2, RefreshCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CitaTable } from "@/modules/citas/components/CitaTable";
 import { citaService } from "@/modules/citas/services/citaService";
-import { DetalleCita } from "@/modules/citas/types";
+import { Cita } from "@/modules/citas/types";
 
 const CitaFormLazy = dynamic(
   () => import("@/modules/citas/components/CitaForm").then((mod) => mod.CitaForm),
@@ -18,14 +18,17 @@ const CitaFormLazy = dynamic(
 );
 
 export default function CitasPage() {
-  const [detalles, setDetalles] = useState<DetalleCita[]>([]);
+  const [citas, setCitas] = useState<Cita[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedDetalle, setSelectedDetalle] = useState<DetalleCita | null>(null);
+  const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [estadoActualizandoId, setEstadoActualizandoId] = useState<number | null>(null);
 
+  // Función para mostrar texto o un valor de fallback
+  // fallback es útil para mostrar "-" en caso de que el valor sea null,
+  //  undefined o una cadena vacía
   function textOrFallback(value: unknown, fallback = "-") {
     if (typeof value === "string" && value.trim()) {
       return value.trim();
@@ -49,8 +52,8 @@ export default function CitasPage() {
     return date.toLocaleString();
   }
 
-  function getNombreChofer(detalle: DetalleCita) {
-    const rawUsuario = detalle.usuario as unknown as Record<string, unknown> | undefined;
+  function getNombreChofer(cita: Cita) {
+    const rawUsuario = cita.usuario as unknown as Record<string, unknown> | undefined;
     const nombres = textOrFallback(rawUsuario?.nombres, "");
     const apellidos = textOrFallback(rawUsuario?.apellidos, "");
     const fullName = `${nombres} ${apellidos}`.trim();
@@ -59,7 +62,7 @@ export default function CitasPage() {
       return fullName;
     }
 
-    return textOrFallback(rawUsuario?.username ?? rawUsuario?.usuario ?? detalle.idUsuario, "No asignado");
+    return textOrFallback(rawUsuario?.username ?? rawUsuario?.usuario, "No asignado");
   }
 
   useEffect(() => {
@@ -74,8 +77,8 @@ export default function CitasPage() {
     }
 
     try {
-      const data = await citaService.listarDetalles();
-      setDetalles(data.content);
+      const data = await citaService.listar();
+      setCitas(data.content);
     } catch (error) {
       console.error("Error fetching citas:", error);
     } finally {
@@ -100,15 +103,15 @@ export default function CitasPage() {
     }
   }
 
-  async function handleEstadoChange(idDetalle: number, estado: string) {
+  async function handleEstadoChange(idCita: number, estado: string) {
     // Actualización optimista: el badge cambia inmediatamente
-    setDetalles((prev) =>
-      prev.map((d) => (d.idDetalle === idDetalle ? { ...d, estado } : d))
+    setCitas((prev) =>
+      prev.map((cita) => (cita.idCita === idCita ? { ...cita, estado } : cita))
     );
 
-    setEstadoActualizandoId(idDetalle);
+    setEstadoActualizandoId(idCita);
     try {
-      await citaService.actualizarEstado(idDetalle, estado);
+      await citaService.actualizarEstado(idCita, estado);
       await fetchCitas(); // sincroniza con el backend sin ocultar la tabla
     } catch (error) {
       console.error("Error updating cita estado:", error);
@@ -149,9 +152,9 @@ export default function CitasPage() {
         </div>
       ) : (
         <CitaTable
-          detalles={detalles}
+          citas={citas}
           onEstadoChange={handleEstadoChange}
-          onViewDetail={(detalle) => setSelectedDetalle(detalle)}
+          onViewDetail={(cita) => setSelectedCita(cita)}
           updatingEstadoId={estadoActualizandoId}
         />
       )}
@@ -171,70 +174,74 @@ export default function CitasPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={Boolean(selectedDetalle)} onOpenChange={(open) => !open && setSelectedDetalle(null)}>
+      <Dialog open={Boolean(selectedCita)} onOpenChange={(open) => !open && setSelectedCita(null)}>
         <DialogContent className="sm:max-w-[720px]">
           <DialogHeader>
             <DialogTitle>Detalle de Cita</DialogTitle>
           </DialogHeader>
-          {selectedDetalle ? (
+          {selectedCita ? (
             <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">ID detalle</p>
-                <p className="font-medium">{selectedDetalle.idDetalle}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">ID cita</p>
+                <p className="font-medium">{selectedCita.idCita}</p>
               </div>
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Estado</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.estado)}</p>
-              </div>
-
-              <div className="rounded-md border p-3 sm:col-span-2">
-                <p className="text-xs uppercase text-muted-foreground">Cliente</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.cliente?.nombresRazonSocial)}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Estado</p>
+                <p className="font-medium">{textOrFallback(selectedCita.estado)}</p>
               </div>
 
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Destinatario</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.destinatario?.nombresRazonSocial)}</p>
-              </div>
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Fecha de registro</p>
-                <p className="font-medium">{formatDate(selectedDetalle.fechaRegistro)}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Cliente</p>
+                <p className="font-medium">{textOrFallback(selectedCita.cliente?.nombresRazonSocial)}</p>
               </div>
 
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Origen</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.terminalOrigen?.nombreUbicacion)}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Destinatario</p>
+                <p className="font-medium">{textOrFallback(selectedCita.destinatario?.nombreCompleto)}</p>
               </div>
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Destino</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.terminalDestino?.nombreUbicacion)}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Fecha de creación</p>
+                <p className="font-medium">{formatDate(selectedCita.fechaCreacion)}</p>
               </div>
-
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Chofer</p>
-                <p className="font-medium">{getNombreChofer(selectedDetalle)}</p>
-              </div>
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Camión</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.camion?.placa)}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Fecha de llegada</p>
+                <p className="font-medium">{formatDate(selectedCita.fechaLlegada)}</p>
               </div>
 
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Carga</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.carga?.tipoCarga)}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Origen</p>
+                <p className="font-medium">{textOrFallback(selectedCita.terminalOrigen?.nombreUbicacion)}</p>
               </div>
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Seguimiento</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.carga?.codigoSeguimiento)}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Destino</p>
+                <p className="font-medium">{textOrFallback(selectedCita.terminalDestino?.nombreUbicacion)}</p>
               </div>
 
-              <div className="rounded-md border p-3">
-                <p className="text-xs uppercase text-muted-foreground">Días estimados</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.diasEstimados)}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Chofer</p>
+                <p className="font-medium">{getNombreChofer(selectedCita)}</p>
               </div>
-              <div className="rounded-md border p-3 sm:col-span-2">
-                <p className="text-xs uppercase text-muted-foreground">Observación</p>
-                <p className="font-medium">{textOrFallback(selectedDetalle.observacion, "Sin observaciones")}</p>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Camión</p>
+                <p className="font-medium">{textOrFallback(selectedCita.camion?.placa)}</p>
+              </div>
+
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full  ">Carga</p>
+                <p className="font-medium">{textOrFallback(selectedCita.carga?.tipoCarga)}</p>
+              </div>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Seguimiento</p>
+                <p className="font-medium">{textOrFallback(selectedCita.carga?.codigoSeguimiento)}</p>
+              </div>
+
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Días estimados</p>
+                <p className="font-medium">{textOrFallback(selectedCita.diasEstimados)}</p>
+              </div>
+              <div className="rounded-md border p-3 flex flex-col gap-2">
+                <p className="text-xs uppercase text-muted-foreground bg-neutral-700 text-white w-fit px-2 py-1 font-semibold rounded-full">Observación</p>
+                <p className="font-medium">{textOrFallback(selectedCita.observacion, "Sin observaciones")}</p>
               </div>
             </div>
           ) : null}

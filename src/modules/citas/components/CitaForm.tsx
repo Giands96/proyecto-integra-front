@@ -97,6 +97,8 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
     return esDelCliente && estaDisponible;
   });
 
+  const camionesDisponibles = data.camiones.filter((cm) => Number(cm.disponible) === 1);
+
   // Si se cambia el cliente, reseteamos la carga seleccionada para evitar incongruencias
   useEffect(() => {
     const idCargaActual = form.getValues("idCarga") as number;
@@ -324,19 +326,22 @@ export function CitaForm({ onSubmit, onCancel, loading }: { onSubmit: (data: Cit
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una opción">
                         {field.value
-                          ? data.camiones.find((cm) => cm.idCamion === field.value)?.placa
+                          ? camionesDisponibles.find((cm) => cm.idCamion === field.value)?.placa
                           : null}
                       </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {data.camiones.map((cm) => (
+                    {camionesDisponibles.map((cm) => (
                       <SelectItem key={cm.idCamion} value={String(cm.idCamion)}>
                         {cm.placa}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {camionesDisponibles.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No hay camiones disponibles en este momento.</p>
+                ) : null}
                 <FormMessage />
               </FormItem>
             )}

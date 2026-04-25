@@ -1,7 +1,7 @@
 "use client";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DetalleCita } from "../types";
+import { Cita } from "../types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -47,14 +47,14 @@ function getEstadoLabel(estado: string) {
   return ESTADO_LABELS[key] || toText(estado) || "Desconocido";
 }
 
-function getChoferLabel(detalle: DetalleCita) {
+function getChoferLabel(cita: Cita) {
   const posibleChoferes = [
-    detalle.usuario,
-    (detalle as unknown as Record<string, unknown>).usuarioAsignado,
-    (detalle as unknown as Record<string, unknown>).choferAsignado,
-    (detalle as unknown as Record<string, unknown>).empleado,
-    (detalle as unknown as Record<string, unknown>).user,
-    (detalle as unknown as Record<string, unknown>).asignado,
+    cita.usuario,
+    (cita as unknown as Record<string, unknown>).usuarioAsignado,
+    (cita as unknown as Record<string, unknown>).choferAsignado,
+    (cita as unknown as Record<string, unknown>).empleado,
+    (cita as unknown as Record<string, unknown>).user,
+    (cita as unknown as Record<string, unknown>).asignado,
   ];
 
   for (const posibleChofer of posibleChoferes) {
@@ -64,26 +64,26 @@ function getChoferLabel(detalle: DetalleCita) {
     }
   }
 
-  const detalleCrudo = detalle as unknown as Record<string, unknown>;
-  const idUsuario = detalleCrudo.idUsuario ?? detalleCrudo.idChofer;
+  const citaCruda = cita as unknown as Record<string, unknown>;
+  const idUsuario = citaCruda.idUsuario ?? citaCruda.idChofer;
 
   if (typeof idUsuario === "number" || typeof idUsuario === "string") {
     return `Chofer #${idUsuario}`;
   }
 
-  return detalle.idUsuario ? `Usuario #${detalle.idUsuario}` : "No asignado";
+  return typeof citaCruda.idUsuario === "number" ? `Usuario #${citaCruda.idUsuario}` : "No asignado";
 }
 
 
 
 interface CitaTableProps {
-  detalles: DetalleCita[];
-  onEstadoChange: (idDetalle: number, estado: string) => void;
-  onViewDetail: (detalle: DetalleCita) => void;
+  citas: Cita[];
+  onEstadoChange: (idCita: number, estado: string) => void;
+  onViewDetail: (cita: Cita) => void;
   updatingEstadoId?: number | null;
 }
 
-export function CitaTable({ detalles, onEstadoChange, onViewDetail, updatingEstadoId }: CitaTableProps) {
+export function CitaTable({ citas, onEstadoChange, onViewDetail, updatingEstadoId }: CitaTableProps) {
   return (
     <div className="rounded-md border bg-white">
       <Table>
@@ -100,26 +100,26 @@ export function CitaTable({ detalles, onEstadoChange, onViewDetail, updatingEsta
           </TableRow>
         </TableHeader>
         <TableBody>
-          {detalles.map((d) => (
-            <TableRow key={d.idDetalle}>
-              <TableCell>{d.idDetalle}</TableCell>
+          {citas.map((cita) => (
+            <TableRow key={cita.idCita}>
+              <TableCell>{cita.idCita}</TableCell>
               <TableCell className="font-medium">
-                {d.cliente.nombresRazonSocial}
+                {cita.cliente.nombresRazonSocial}
               </TableCell>
               <TableCell>
-                {d.terminalOrigen.nombreUbicacion} -{" "}
-                {d.terminalDestino?.nombreUbicacion || "-"}
+                {cita.terminalOrigen.nombreUbicacion} -{" "}
+                {cita.terminalDestino?.nombreUbicacion || "-"}
               </TableCell>
               <TableCell>
-                <div>{d.carga.tipoCarga}</div>
+                <div>{cita.carga.tipoCarga}</div>
                 <div className="text-xs text-muted-foreground">
-                  {d.carga.codigoSeguimiento}
+                  {cita.carga.codigoSeguimiento}
                 </div>
               </TableCell>
               <TableCell>
-                <div>{getChoferLabel(d)}</div>
+                <div>{getChoferLabel(cita)}</div>
                 <div className="text-xs text-muted-foreground">
-                  {d.camion?.placa || "-"}
+                  {cita.camion?.placa || "-"}
                 </div>
               </TableCell>
               <TableCell>
@@ -133,23 +133,23 @@ export function CitaTable({ detalles, onEstadoChange, onViewDetail, updatingEsta
                     CANCELADO: "border-rose-300 bg-rose-200 text-rose-800",
                   };
 
-                  const estadoActual = normalizeEstado(d.estado);
+                  const estadoActual = normalizeEstado(cita.estado);
                   const clasesColor = coloresPorEstado[estadoActual] || "border-zinc-300 bg-zinc-200 text-zinc-800";
 
                   return (
                     <div className={`inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors ${clasesColor}`}>
-                      {getEstadoLabel(d.estado)}
+                      {getEstadoLabel(cita.estado)}
                     </div>
                   );
                 })()}
               </TableCell>
               <TableCell>
                 <Select
-                  value={normalizeEstado(d.estado)}
+                  value={normalizeEstado(cita.estado)}
                   onValueChange={(value) =>
-                    onEstadoChange(d.idDetalle, value ?? "POR_ASIGNAR")
+                    onEstadoChange(cita.idCita, value ?? "POR_ASIGNAR")
                   }
-                  disabled={updatingEstadoId === d.idDetalle}
+                  disabled={updatingEstadoId === cita.idCita}
                 >
                   <SelectTrigger className="w-[170px]">
                     <SelectValue placeholder="Cambiar estado" />
@@ -167,7 +167,7 @@ export function CitaTable({ detalles, onEstadoChange, onViewDetail, updatingEsta
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onViewDetail(d)}
+                  onClick={() => onViewDetail(cita)}
                 >
                   <Eye className="mr-2 h-4 w-4" />
                   Ver detalle

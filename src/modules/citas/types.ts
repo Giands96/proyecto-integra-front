@@ -14,24 +14,18 @@ export type EstadoCita =
   | "CANCELADO";
 
 export interface Cita {
-  idCita?: number;
-  fechaCreacion: string;
-}
-
-export interface DetalleCita {
-  idDetalle: number;
-  usuario?: Empleado;
-  idUsuario?: number;
-  cita: Cita;
+  idCita: number;
   cliente: Cliente;
   destinatario: Destinatario;
   terminalOrigen: Terminal;
   terminalDestino?: Terminal;
   carga: Carga;
+  usuario?: Empleado;
   camion?: Camion;
-  fechaRegistro: string;
-  estado: string;
+  fechaCreacion: string;
   diasEstimados: number;
+  fechaLlegada?: string;
+  estado: EstadoCita | string;
   observacion?: string;
 }
 
@@ -47,4 +41,4 @@ export interface CitaCompletaRequest {
   observacion?: string;
 }
 
-export type DetalleCitaPaginatedResponse = PaginatedResponse<DetalleCita>;
+export type CitaPaginatedResponse = PaginatedResponse<Cita>;

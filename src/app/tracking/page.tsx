@@ -1,132 +1,217 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import api from "@/lib/axios";
-
-interface TrackingTerminal {
-  nombreUbicacion: string;
-}
-
-interface TrackingCarga {
-  tipoCarga: string;
-}
-
-interface TrackingResult {
-  estado: string;
-  terminalOrigen?: TrackingTerminal;
-  terminalDestino?: TrackingTerminal;
-  carga?: TrackingCarga;
-  fechaRegistro: string;
-  observacion?: string;
-}
+import { Truck, Search, ArrowLeft } from "lucide-react";
+import { TrackingResultModal } from "@/modules/tracking/components/TrackingResultModal";
+import { trackingService } from "@/modules/tracking/services/trackingService";
+import { TrackingResult } from "@/modules/tracking/types";
+import { getHttpStatus } from "@/modules/tracking/utils";
 
 export default function TrackingPage() {
   const [trackingCode, setTrackingCode] = useState("");
-  const [document, setDocument] = useState("");
-  const [result, setResult] = useState<TrackingResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [document, setDocument]         = useState("");
+  const [result, setResult]             = useState<TrackingResult | null>(null);
+  const [loading, setLoading]           = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
   async function handleSearch() {
+    const idSeguimiento = trackingCode.trim();
+    const documento = document.trim();
+
+    if (!idSeguimiento || !documento) {
+      return;
+    }
+
     setLoading(true);
-    setError(false);
+    setErrorMessage(null);
     setResult(null);
+    setIsResultModalOpen(false);
+
     try {
-      const response = await api.get<TrackingResult>(`/api/public/tracking/${trackingCode}/${document}`);
-      setResult(response.data);
-    } catch (err) {
-      console.error(err)
-      setError(true);
+      const trackingResult = await trackingService.buscarPorSeguimiento(idSeguimiento, documento);
+      setResult(trackingResult);
+      setIsResultModalOpen(true);
+      return;
+    } catch (errorCarga) {
+      console.error("No se encontró carga por tracking:", errorCarga);
+
+      const status = getHttpStatus(errorCarga);
+      if (status === 401 || status === 403) {
+        setErrorMessage("No tienes permisos para consultar tracking en este momento.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    try {
+      const trackingResult = await trackingService.buscarCitaFallback(idSeguimiento, documento);
+      setResult(trackingResult);
+      setIsResultModalOpen(true);
+    } catch (errorCita) {
+      console.error("No se encontró cita por tracking:", errorCita);
+      setErrorMessage("No se encontró una carga o cita con ese código de seguimiento y documento.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-zinc-100 p-8 flex flex-col items-center">
-      <div className="w-full max-w-2xl space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900">Ransa Tracking</h1>
-          <p className="mt-2 text-muted-foreground">Consulta el estado de tu envío en tiempo real</p>
-        </div>
+    <div className="font-body min-h-screen bg-ransa-navy overflow-x-hidden">
 
-        <Card>
-          <CardContent className="pt-6">
+      {/* ── HEADER ── */}
+      <header className="sticky top-0 z-50 h-16 flex items-center px-8
+                         bg-ransa-navy/97 backdrop-blur-md
+                         border-b border-ransa-accent/20">
+        <div className="max-w-[1100px] w-full mx-auto flex items-center">
+          <Link href="/" className="flex items-center gap-2.5 no-underline">
+            <div className="w-[34px] h-[34px] bg-ransa-accent rounded-[6px]
+                            flex items-center justify-center text-ransa-navy">
+              <Truck size={18} />
+            </div>
+            <span className="font-display text-[22px] tracking-[1.5px] text-white">
+              RANSA <span className="text-ransa-accent">LOGÍSTICA</span>
+            </span>
+          </Link>
+          <nav className="ml-auto">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 text-[13px] font-medium
+                         px-4 py-2 rounded-md text-white/60
+                         transition-colors hover:text-white"
+            >
+              <ArrowLeft size={13} />
+              Volver al inicio
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      {/* ── HERO STRIP ── */}
+      <div className="relative bg-ransa-navy border-b border-white/5 px-8 py-14 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-hero-grid bg-grid-48 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px]
+                        rounded-full bg-hero-glow pointer-events-none -translate-y-1/2" />
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 bg-ransa-accent/10 border border-ransa-accent/30
+                          rounded-full px-3.5 py-1.5 mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-ransa-accent animate-pulse-dot" />
+            <span className="text-[11px] font-medium text-ransa-accent tracking-[1.5px] uppercase">
+              Sistema de Rastreo
+            </span>
+          </div>
+          <h1 className="font-display text-[42px] md:text-[56px] tracking-[2px] text-white leading-none">
+            RASTREAR <span className="text-ransa-accent">ENVÍO</span>
+          </h1>
+          <p className="mt-3 text-[15px] font-light text-white/50 max-w-md mx-auto leading-relaxed">
+            Ingresa tu código de seguimiento y documento para consultar el estado en tiempo real.
+          </p>
+          <p className="text-white mt-4 flex flex-col">o.. intenta con nuestro nuevo Asistente IA ;) <span className="text-white/50">(ubicado en la esquina inferior derecha)</span></p>
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT ── */}
+      <div className="px-8 py-12">
+        <div className="max-w-2xl mx-auto space-y-6">
+
+          {/* Search card */}
+          <div className="bg-ransa-ink border border-white/10 rounded-2xl p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Código de Seguimiento</label>
+              <div className="space-y-1.5">
+                <label className="text-[12px] font-medium text-white/50 uppercase tracking-[1px]">
+                  Código de Seguimiento
+                </label>
                 <Input
                   placeholder="2026-XXXX"
                   value={trackingCode}
                   onChange={(e) => setTrackingCode(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !loading && trackingCode && document && handleSearch()}
+                  className="bg-ransa-navy/60 border-white/10 text-white placeholder:text-white/25
+                             focus-visible:ring-ransa-accent/40 focus-visible:border-ransa-accent/50
+                             h-11 rounded-lg"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">DNI / RUC</label>
+              <div className="space-y-1.5">
+                <label className="text-[12px] font-medium text-white/50 uppercase tracking-[1px]">
+                  DNI / RUC
+                </label>
                 <Input
                   placeholder="Número de documento"
                   value={document}
                   onChange={(e) => setDocument(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !loading && trackingCode && document && handleSearch()}
+                  className="bg-ransa-navy/60 border-white/10 text-white placeholder:text-white/25
+                             focus-visible:ring-ransa-accent/40 focus-visible:border-ransa-accent/50
+                             h-11 rounded-lg"
                 />
               </div>
             </div>
-            <Button
-              className="w-full mt-6"
+
+            <button
               onClick={handleSearch}
               disabled={loading || !trackingCode || !document}
+              className="w-full mt-5 h-11 flex items-center justify-center gap-2
+                         font-semibold text-sm tracking-[0.3px] rounded-lg
+                         bg-ransa-accent text-ransa-navy
+                         transition-all duration-150
+                         hover:bg-ransa-accent-lt hover:-translate-y-px
+                         disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
-              Consultar Estado
-            </Button>
-          </CardContent>
-        </Card>
-
-        {error && (
-          <div className="rounded-lg border border-zinc-300 bg-zinc-200 p-4 text-center text-sm text-zinc-700">
-            No se encontró información para los datos proporcionados.
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-ransa-navy/30 border-t-ransa-navy
+                                   rounded-full animate-spin" />
+                  Consultando...
+                </>
+              ) : (
+                <>
+                  <Search size={15} />
+                  Consultar Estado
+                </>
+              )}
+            </button>
           </div>
-        )}
 
-        {result && (
-          <Card className="border-zinc-300 bg-white">
-            <CardHeader className="border-b bg-zinc-100">
-              <CardTitle className="flex justify-between items-center">
-                <span>Estado del Envío</span>
-                <Badge variant="secondary" className="text-lg px-4 py-1">
-                  {result.estado}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                <div>
-                  <p className="text-sm text-muted-foreground">Origen</p>
-                  <p className="font-medium">{result.terminalOrigen?.nombreUbicacion}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Destino</p>
-                  <p className="font-medium">{result.terminalDestino?.nombreUbicacion || "En tránsito"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Carga</p>
-                  <p className="font-medium">{result.carga?.tipoCarga}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Última actualización</p>
-                  <p className="font-medium">{new Date(result.fechaRegistro).toLocaleDateString()}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground">Observación</p>
-                  <p className="italic">{result.observacion || "Sin observaciones"}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {/* Error state */}
+          {errorMessage && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5 text-center">
+              <p className="text-sm text-red-400 font-medium">
+                {errorMessage}
+              </p>
+              <p className="text-xs text-red-400/60 mt-1">
+                Verifica el código de seguimiento y el documento ingresado.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* ── FOOTER ── */}
+      <footer className="mt-8 border-t border-ransa-accent/15 px-8 py-7">
+        <div className="max-w-[1100px] mx-auto flex flex-wrap items-center justify-between gap-4">
+          <p className="text-[13px] font-light text-white/35">
+            © 2026 Ransa Logística S.A. Todos los derechos reservados.
+          </p>
+          <nav className="flex gap-6">
+            <Link href="#" className="text-[13px] text-white/40 no-underline transition-colors hover:text-ransa-accent">
+              Términos de Servicio
+            </Link>
+            <Link href="#" className="text-[13px] text-white/40 no-underline transition-colors hover:text-ransa-accent">
+              Privacidad
+            </Link>
+          </nav>
+        </div>
+      </footer>
+
+      <TrackingResultModal
+        open={isResultModalOpen}
+        onOpenChange={setIsResultModalOpen}
+        result={result}
+        trackingCode={trackingCode}
+      />
+
     </div>
   );
 }

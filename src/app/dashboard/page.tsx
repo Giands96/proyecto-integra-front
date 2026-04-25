@@ -106,7 +106,7 @@ export default function DashboardPage() {
           choferService.listar(),
           terminalService.listar(),
           cargaService.listar(),
-          citaService.listarDetalles(),
+          citaService.listar(),
         ]);
 
         const splitCamiones = getDisponibilidadSplit(camiones.content);
