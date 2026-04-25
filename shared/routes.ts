@@ -16,9 +16,8 @@ export const API_ROUTES = {
   TERMINALES: '/api/terminales',
   CITAS: {
     BASE: '/api/citas',
-    DETALLES: '/api/citas/detalles',
     GUARDAR: '/api/citas/guardar',
-    ACTUALIZAR_ESTADO: (idDetalle: number) => `/api/citas/${idDetalle}/estado`,
+    ACTUALIZAR_ESTADO: (idCita: number) => `/api/citas/${idCita}/estado`,
   }
 };
 
