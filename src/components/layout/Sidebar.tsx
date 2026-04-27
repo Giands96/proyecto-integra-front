@@ -47,7 +47,8 @@ export function Sidebar() {
           "/dashboard/terminales",
           "/dashboard/cargas",
           "/dashboard/citas",
-        ].includes(item.href)
+          "/dashboard/destinatarios"
+          ].includes(item.href)
       )
     : isChofer
       ? navItems.filter((item) =>

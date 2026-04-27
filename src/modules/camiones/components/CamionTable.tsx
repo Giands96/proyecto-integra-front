@@ -31,7 +31,9 @@ export function CamionTable({ camiones, onEdit, onDelete }: CamionTableProps) {
               <TableCell className="font-medium">{camion.placa}</TableCell>
               <TableCell>
                 <Badge variant={camion.disponible === 1 ? "default" : "destructive"}>
-                  {camion.disponible === 1 ? "Disponible" : "No Disponible"}
+                  <div className={camion.disponible === 1 ? "bg-blue-500/20 text-blue-800 px-3 py-2 rounded-full border border-blue-500" : "bg-red-500/20 text-red-800 px-3 py-2 rounded-full border border-red-500"}>
+                    {camion.disponible === 1 ? "Disponible" : "No Disponible"}
+                  </div>
                 </Badge>
               </TableCell>
               <TableCell className="text-right">

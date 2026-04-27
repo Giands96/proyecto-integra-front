@@ -29,7 +29,6 @@ export function ChoferTable({ choferes, onEdit }: ChoferTableProps) {
             <TableHead>Nombre Completo</TableHead>
             <TableHead>Usuario</TableHead>
             <TableHead>Rol</TableHead>
-            <TableHead>Fecha Registro</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -44,7 +43,6 @@ export function ChoferTable({ choferes, onEdit }: ChoferTableProps) {
                   {chofer.rol}
                 </Badge>
               </TableCell>
-              <TableCell>{chofer.fechaCreacion ? new Date(chofer.fechaCreacion).toLocaleDateString() : "N/A"}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Button
