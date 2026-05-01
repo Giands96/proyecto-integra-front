@@ -9,3 +9,11 @@ export const empleadoSchema = z.object({
     message: "Rol es requerido",
   }),
 });
+
+export const actualizarEmpleadoSchema = z.object({
+  nombres: z.string().min(1, "Nombres es requerido"),
+  apellidos: z.string().min(1, "Apellidos es requerido"),
+  rol: z.enum(["ADMINISTRADOR", "OPERADOR", "CHOFER"], {
+    message: "Rol es requerido",
+  }),
+});
