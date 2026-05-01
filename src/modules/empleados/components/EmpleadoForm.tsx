@@ -1,24 +1,32 @@
 ﻿"use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CrearEmpleadoPayload } from "../types";
-import { empleadoSchema } from "../schemas";
+import { CrearEmpleadoPayload, ActualizarEmpleadoPayload, Empleado } from "../types";
+import { empleadoSchema, actualizarEmpleadoSchema } from "../schemas";
 
 interface EmpleadoFormProps {
-  onSubmit: (data: CrearEmpleadoPayload) => void;
+  onSubmit: (data: CrearEmpleadoPayload | ActualizarEmpleadoPayload) => void;
   onCancel: () => void;
   loading?: boolean;
+  editingEmpleado?: Empleado;
 }
 
-export function EmpleadoForm({ onSubmit, onCancel, loading }: EmpleadoFormProps) {
-  const form = useForm<CrearEmpleadoPayload>({
-    resolver: zodResolver(empleadoSchema),
-    defaultValues: {
+export function EmpleadoForm({ onSubmit, onCancel, loading, editingEmpleado }: EmpleadoFormProps) {
+  const isEditing = !!editingEmpleado;
+  const schema = isEditing ? actualizarEmpleadoSchema : empleadoSchema;
+  
+  const form = useForm<CrearEmpleadoPayload | ActualizarEmpleadoPayload>({
+    resolver: zodResolver(schema as any),
+    defaultValues: isEditing ? {
+      nombres: editingEmpleado.nombres,
+      apellidos: editingEmpleado.apellidos,
+      rol: (editingEmpleado.role as any),
+    } : {
       nombres: "",
       apellidos: "",
       username: "",
@@ -26,6 +34,16 @@ export function EmpleadoForm({ onSubmit, onCancel, loading }: EmpleadoFormProps)
       rol: "OPERADOR",
     },
   });
+
+  useEffect(() => {
+    if (isEditing && editingEmpleado) {
+      form.reset({
+        nombres: editingEmpleado.nombres,
+        apellidos: editingEmpleado.apellidos,
+        rol: (editingEmpleado.role as any),
+      });
+    }
+  }, [editingEmpleado, isEditing, form]);
 
   return (
     <Form {...form}>
@@ -59,33 +77,37 @@ export function EmpleadoForm({ onSubmit, onCancel, loading }: EmpleadoFormProps)
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Usuario</FormLabel>
-              <FormControl>
-                <Input placeholder="juan.perez" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!isEditing && (
+          <>
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Usuario</FormLabel>
+                  <FormControl>
+                    <Input placeholder="juan.perez" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contrasena</FormLabel>
-              <FormControl>
-                <Input type="password" placeholder="******" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contrasena</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="******" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
 
         <FormField
           control={form.control}
@@ -112,7 +134,7 @@ export function EmpleadoForm({ onSubmit, onCancel, loading }: EmpleadoFormProps)
 
         <div className="flex justify-end gap-4 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
-          <Button type="submit" disabled={loading}>Guardar Empleado</Button>
+          <Button type="submit" disabled={loading}>{isEditing ? "Actualizar Empleado" : "Guardar Empleado"}</Button>
         </div>
       </form>
     </Form>
