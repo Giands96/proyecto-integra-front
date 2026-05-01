@@ -1,6 +1,7 @@
-﻿import { getWithCache, invalidateCacheByPrefix } from "@/lib/apiCache";
+﻿import api from "@/lib/axios";
+import { getWithCache, invalidateCacheByPrefix } from "@/lib/apiCache";
 import { authService } from "@/modules/auth/services/authService";
-import { CrearEmpleadoPayload, Empleado, EmpleadoPaginatedResponse } from "../types";
+import { CrearEmpleadoPayload, ActualizarEmpleadoPayload, Empleado, EmpleadoPaginatedResponse } from "../types";
 import API_ROUTES from "../../../../shared/routes";
 
 
@@ -120,5 +121,11 @@ export const empleadoService = {
     });
     invalidateCacheByPrefix(API_ROUTES.EMPLEADOS.replace(/\/$/, ""));
     return response;
+  },
+  actualizar: async (idUsuario: number, payload: ActualizarEmpleadoPayload) => {
+    const url = `${API_ROUTES.EMPLEADOS.replace(/\/$/, "")}/${idUsuario}`;
+    const response = await api.put<Empleado>(url, payload);
+    invalidateCacheByPrefix(API_ROUTES.EMPLEADOS.replace(/\/$/, ""));
+    return response.data;
   },
 };
