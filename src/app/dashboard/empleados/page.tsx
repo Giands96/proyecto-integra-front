@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EmpleadoTable } from "@/modules/empleados/components/EmpleadoTable";
 import { empleadoService } from "@/modules/empleados/services/empleadoService";
-import { CrearEmpleadoPayload, Empleado } from "@/modules/empleados/types";
+import { CrearEmpleadoPayload, ActualizarEmpleadoPayload, Empleado } from "@/modules/empleados/types";
 
 const EmpleadoFormLazy = dynamic(
   () => import("@/modules/empleados/components/EmpleadoForm").then((mod) => mod.EmpleadoForm),
@@ -22,6 +22,7 @@ export default function EmpleadosPage() {
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingEmpleado, setEditingEmpleado] = useState<Empleado | undefined>();
 
   useEffect(() => {
     fetchEmpleados();
@@ -40,16 +41,38 @@ export default function EmpleadosPage() {
     }
   }
 
-  async function handleSubmit(data: CrearEmpleadoPayload) {
+  async function handleSubmit(data: CrearEmpleadoPayload | ActualizarEmpleadoPayload) {
     setFormLoading(true);
     try {
-      await empleadoService.crear(data);
+      if (editingEmpleado) {
+        await empleadoService.actualizar(editingEmpleado.idUsuario, data as ActualizarEmpleadoPayload);
+      } else {
+        await empleadoService.crear(data as CrearEmpleadoPayload);
+      }
       setIsDialogOpen(false);
+      setEditingEmpleado(undefined);
       fetchEmpleados();
     } catch (error) {
-      console.error("Error creating empleado:", error);
+      console.error("Error saving empleado:", error);
     } finally {
       setFormLoading(false);
+    }
+  }
+
+  function handleEdit(empleado: Empleado) {
+    setEditingEmpleado(empleado);
+    setIsDialogOpen(true);
+  }
+
+  function handleCloseDialog() {
+    setIsDialogOpen(false);
+    setEditingEmpleado(undefined);
+  }
+
+  function handleDelete(idUsuario: number) {
+    if (confirm("¿Estás seguro de que deseas eliminar este empleado?")) {
+      console.log("Eliminar empleado:", idUsuario);
+      // TODO: Implementar eliminación cuando el backend lo soporte
     }
   }
 
@@ -71,19 +94,20 @@ export default function EmpleadosPage() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <EmpleadoTable empleados={empleados} />
+        <EmpleadoTable empleados={empleados} onEdit={handleEdit} onDelete={handleDelete} />
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>Nuevo Empleado</DialogTitle>
+            <DialogTitle>{editingEmpleado ? "Editar Empleado" : "Nuevo Empleado"}</DialogTitle>
           </DialogHeader>
           {isDialogOpen ? (
             <EmpleadoFormLazy
               onSubmit={handleSubmit}
-              onCancel={() => setIsDialogOpen(false)}
+              onCancel={handleCloseDialog}
               loading={formLoading}
+              editingEmpleado={editingEmpleado}
             />
           ) : null}
         </DialogContent>
