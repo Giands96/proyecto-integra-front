@@ -67,8 +67,11 @@ function toTitle(value: string) {
 
 function getDisponibilidadSplit<T>(items: T[]) {
   const disponibles = items.filter((item) => {
-    const disponibilidad = (item as { disponibilidad?: number }).disponibilidad ?? 0;
-    return disponibilidad > 0;
+    const asAny = item as unknown as Record<string, unknown>;
+    const disponibilidadRaw =
+      asAny.disponible ?? asAny.disponibilidad ?? 0;
+    const disponibilidad = Number(disponibilidadRaw);
+    return disponibilidad === 1 || disponibilidad > 0;
   }).length;
 
   return {
