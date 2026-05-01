@@ -3,10 +3,14 @@
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2 } from "lucide-react";
 import { Empleado } from "../types";
 
 interface EmpleadoTableProps {
   empleados: Empleado[];
+  onEdit?: (empleado: Empleado) => void;
+  onDelete?: (idUsuario: number) => void;
 }
 
 // Helper para normalizar rol a string puro
@@ -23,7 +27,7 @@ function normalizeRoleDisplay(role: unknown): string {
   return String(role || "SIN_ROL");
 }
 
-export function EmpleadoTable({ empleados }: EmpleadoTableProps) {
+export function EmpleadoTable({ empleados, onEdit, onDelete }: EmpleadoTableProps) {
   return (
     <div className="rounded-md border bg-white">
       <Table>
@@ -33,6 +37,7 @@ export function EmpleadoTable({ empleados }: EmpleadoTableProps) {
             <TableHead>Usuario</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Rol</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -44,11 +49,30 @@ export function EmpleadoTable({ empleados }: EmpleadoTableProps) {
               <TableCell>
                 <Badge variant="secondary">{normalizeRoleDisplay(empleado.role)}</Badge>
               </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onEdit?.(empleado)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => onDelete?.(empleado.idUsuario)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
           ))}
           {Array.isArray(empleados) && empleados.length === 0 && (
             <TableRow>
-              <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                 No hay empleados registrados.
               </TableCell>
             </TableRow>
