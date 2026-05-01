@@ -16,4 +16,10 @@ export interface CrearEmpleadoPayload {
   apellidos: string;
 }
 
+export interface ActualizarEmpleadoPayload {
+  nombres: string;
+  apellidos: string;
+  rol: "ADMINISTRADOR" | "OPERADOR" | "CHOFER";
+}
+
 export type EmpleadoPaginatedResponse = PaginatedResponse<Empleado>;
